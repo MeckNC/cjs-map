@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882">
+
+<head>
+    <meta charset="UTF-8" />
+    <title>Community Well-Being and Criminal Court Cases</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://js.arcgis.com/4.31/esri/themes/light/main.css" />
+    <script src="https://js.arcgis.com/4.31/"></script>
+
+ 	<script src="https://blog.mecknc.gov/wp-content/uploads/MeckNC/Lib/cjs/custommap_data.js"></script>
+    <script src="https://blog.mecknc.gov/wp-content/uploads/MeckNC/Lib/cjs/tooltips.js"></script>
+    <script src="https://blog.mecknc.gov/wp-content/uploads/MeckNC/Lib/cjs/scripts.js" defer></script>
+    <link rel="stylesheet" href="https://blog.mecknc.gov/wp-content/uploads/MeckNC/Lib/cjs/styles.css">
+
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:gb6d538a3a1248c4863a6952581fbacd msdt:dt="string"></mso:gb6d538a3a1248c4863a6952581fbacd>
+<mso:HashTags msdt:dt="string"></mso:HashTags>
+<mso:j33b1bc20532487296f1bbbdead35a56 msdt:dt="string"></mso:j33b1bc20532487296f1bbbdead35a56>
+<mso:CJS_x0020_Content_x0020_Organizer msdt:dt="string"></mso:CJS_x0020_Content_x0020_Organizer>
+<mso:j09eb9c2769e4117aeba43578a0b4620 msdt:dt="string">Planning|3c9e4c33-daf3-4dc2-8436-be5002973aaa;Internal|2f9ca632-b06a-4f64-89c7-4a373ecbc5b6</mso:j09eb9c2769e4117aeba43578a0b4620>
+<mso:MediaServiceImageTags msdt:dt="string"></mso:MediaServiceImageTags>
+<mso:CJS_x0020_Categories msdt:dt="string">10;#Planning|3c9e4c33-daf3-4dc2-8436-be5002973aaa;#1;#Internal|2f9ca632-b06a-4f64-89c7-4a373ecbc5b6</mso:CJS_x0020_Categories>
+<mso:CJS_x0020_Categories msdt:dt="string">10;#Planning|3c9e4c33-daf3-4dc2-8436-be5002973aaa;#1;#Internal|2f9ca632-b06a-4f64-89c7-4a373ecbc5b6</mso:CJS_x0020_Categories>
+<mso:lcf76f155ced4ddcb4097134ff3c332f msdt:dt="string"></mso:lcf76f155ced4ddcb4097134ff3c332f>
+<mso:TaxCatchAll msdt:dt="string">10;#Planning|3c9e4c33-daf3-4dc2-8436-be5002973aaa;#1;#Internal|2f9ca632-b06a-4f64-89c7-4a373ecbc5b6</mso:TaxCatchAll>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+
+<body>
+    <div class="app">
+        <header class="topbar">
+            <div class="topbar-map-section d-flex justify-content-between align-items-center w-100 position-relative">
+                <div></div>
+                <div class="position-absolute start-50 translate-middle-x d-flex align-items-center gap-2">
+                    <div class="brand-icon" id="brandIcon">MC</div>
+                    <div class="brand-title" id="brandTitle">
+                        <span class="brand-title-text" id="brandTitleText">Community Well-Being and Criminal Court Cases</span>
+                        <span class="brand-year" id="brandYear"></span>
+                    </div>
+                </div>
+                <button id="resetBtn" class="btn btn-map-reset" type="button" title="Reset view to initial state">
+                    <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2.5 2.5v4h4" />
+                        <path d="M2.7 6.2a6 6 0 1 1 1.2 5.8" />
+                    </svg>
+                    Reset
+                </button>
+            </div>
+        </header>
+        <div class="main">
+            <aside class="sidebar">
+                <div class="section-title fw-bold text-uppercase small mb-2" id="cardsHeading">Hover Over or Click a ZIP Area</div>
+                <div class="metric-cards-container" id="metricCardsContainer">
+                    <div class="metric-card" data-metric-id="case_rate" style="--card-color: #6B8E7F;">
+                        <div class="metric-title">
+                            <span>Court Case Rate</span>
+                            <svg class="info-icon" data-tooltip="" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                        </div>
+                        <div class="metric-card-content">
+                            <div class="metric-big-number">
+                                <span class="big-number skeleton" data-role="value">—</span>
+                                <span class="delta skeleton" data-role="delta"><i class="bi bi-caret-up-fill"></i>—</span>
+                            </div>
+                            <div class="card-separator"></div>
+                            <div class="metric-summary">
+                                <span class="county-avg">County Avg</span>
+                                <span data-role="avg">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" data-metric-id="median_income" style="--card-color: #4A8A8A;">
+                        <div class="metric-title">
+                            <span>Median Household Income</span>
+                            <svg class="info-icon" data-tooltip="" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                        </div>
+                        <div class="metric-card-content">
+                            <div class="metric-big-number">
+                                <span class="big-number skeleton" data-role="value">—</span>
+                                <span class="delta skeleton" data-role="delta"><i class="bi bi-caret-up-fill"></i>—</span>
+                            </div>
+                            <div class="card-separator"></div>
+                            <div class="metric-summary">
+                                <span class="county-avg">County Avg</span>
+                                <span data-role="avg">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" data-metric-id="non_poverty_rate" style="--card-color: #2C5F7C;">
+                        <div class="metric-title">
+                            <span>Non-Poverty Rate</span>
+                            <svg class="info-icon" data-tooltip="" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                        </div>
+                        <div class="metric-card-content">
+                            <div class="metric-big-number">
+                                <span class="big-number skeleton" data-role="value">—</span>
+                                <span class="delta skeleton" data-role="delta"><i class="bi bi-caret-up-fill"></i>—</span>
+                            </div>
+                            <div class="card-separator"></div>
+                            <div class="metric-summary">
+                                <span class="county-avg">County Avg</span>
+                                <span data-role="avg">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" data-metric-id="insured_pct" style="--card-color: #B5694A;">
+                        <div class="metric-title">
+                            <span>Health Insurance</span>
+                            <svg class="info-icon" data-tooltip="" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                        </div>
+                        <div class="metric-card-content">
+                            <div class="metric-big-number">
+                                <span class="big-number skeleton" data-role="value">—</span>
+                                <span class="delta skeleton" data-role="delta"><i class="bi bi-caret-up-fill"></i>—</span>
+                            </div>
+                            <div class="card-separator"></div>
+                            <div class="metric-summary">
+                                <span class="county-avg">County Avg</span>
+                                <span data-role="avg">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" data-metric-id="housing_expense_under30" style="--card-color: #7a58718a;">
+                        <div class="metric-title">
+                            <span>Housing</span>
+                            <svg class="info-icon" data-tooltip="" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                        </div>
+                        <div class="metric-card-content">
+                            <div class="metric-big-number">
+                                <span class="big-number skeleton" data-role="value">—</span>
+                                <span class="delta skeleton" data-role="delta"><i class="bi bi-caret-up-fill"></i>—</span>
+                            </div>
+                            <div class="card-separator"></div>
+                            <div class="metric-summary">
+                                <span class="county-avg">County Avg</span>
+                                <span data-role="avg">-</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="metric-card" data-metric-id="education_attainment_rate" style="--card-color: #6B4423;">
+                        <div class="metric-title">
+                            <span>Educational Attainment</span>
+                            <svg class="info-icon" data-tooltip="" viewBox="0 0 16 16" width="12" height="12" fill="currentColor"><path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/><path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/></svg>
+                        </div>
+                        <div class="metric-card-content">
+                            <div class="metric-big-number">
+                                <span class="big-number skeleton" data-role="value">—</span>
+                                <span class="delta skeleton" data-role="delta"><i class="bi bi-caret-up-fill"></i>—</span>
+                            </div>
+                            <div class="card-separator"></div>
+                            <div class="metric-summary">
+                                <span class="county-avg">County Avg</span>
+                                <span data-role="avg">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Shown only in 2-ZIP Compare mode: a direct side-by-side table -->
+                <div class="card mb-2 shadow-sm d-none" id="compareCard">
+                    <div class="card-body p-2">
+                        <div class="section-title fw-bold text-uppercase small mb-2" id="zipAcsTitle"></div>
+                        <div id="zipAcsBody" class="zip-acs-body"></div>
+                    </div>
+                </div>
+
+                <!-- Demographics: kept separate from the metric cards (graphical, not tabular)
+                     and placed at the bottom of the sidebar. -->
+                <div class="card mb-2 shadow-sm" id="demographicsCard">
+                    <div class="card-body p-2">
+                        <div class="section-title fw-bold text-uppercase small mb-2" id="demographicsTitle">Demographics</div>
+                        <div id="demographicsBody" class="zip-acs-body">
+                            <div class="acs-empty text-muted small">Hover over or click a ZIP code on the map to see its
+                                demographic breakdown.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="sidebar-citations-section">
+                    <div class="sidebar-citations-title">Data Notes & Sources</div>
+                    <div class="sidebar-citation-item">
+                        <span>Source for community well-being indicators</span>
+                        <svg class="info-icon" id="acs-tooltip" data-tooltip="" viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                        </svg>
+                    </div>
+                    <div class="sidebar-citation-item">
+                        <span>Source for court case data</span>
+                        <svg class="info-icon" data-tooltip="Criminal court case data comes from Mecklenburg County" viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                        </svg>
+                    </div>
+                    <div class="sidebar-citation-item">
+                        <span>ZIP code mapping</span>
+                        <svg class="info-icon" data-tooltip="Some small or non-residential ZIP codes are combined with a neighboring ZIP code area. Case counts are included in the combined area, and ACS demographic data are shown only for the larger ZIP code area because reliable estimates are unavailable for the smaller ZIP codes." viewBox="0 0 16 16" width="13" height="13" fill="currentColor">
+                            <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                            <path d="M8.93 6.588l-2.29.287-.082.38.45.083c.294.07.352.176.288.469l-.738 3.468c-.194.897.105 1.319.808 1.319.545 0 1.178-.252 1.465-.598l.088-.416c-.2.176-.492.246-.686.246-.275 0-.375-.193-.304-.533L8.93 6.588zM9 4.5a1 1 0 1 1-2 0 1 1 0 0 1 2 0z"/>
+                        </svg>
+                    </div>
+                </div>
+
+                
+                <div id="status" class="status text-muted small">Initializing dashboard...</div>
+
+            </aside>
+            <main class="map-wrap">
+                <div class="map-top-controls">
+
+
+                    <form class="search-wrap shadow-sm" id="searchForm" autocomplete="off">
+                        <svg class="search-icon" viewBox="0 0 16 16" width="14" height="14" fill="none"
+                            stroke="currentColor" stroke-width="1.8" stroke-linecap="round">
+                            <circle cx="6.5" cy="6.5" r="4.5" />
+                            <line x1="10" y1="10" x2="13.5" y2="13.5" />
+                        </svg>
+                        <input type="text" id="searchInput" class="search-input" placeholder="Search ZIP..."
+                            autocomplete="off" />
+                        <div id="searchSuggestions" class="search-suggestions d-none"></div>
+                    </form>
+                    <button id="compareBtn" class="btn btn-map-compare" type="button" title="Toggle 2-ZIP Compare mode">
+                        <svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor"
+                            stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="3" width="5" height="10" rx="1" />
+                            <rect x="9" y="3" width="5" height="10" rx="1" />
+                        </svg>
+                        Compare
+                    </button>
+                </div>
+                <div id="map"></div>
+                <div id="infoPanel" class="info-panel d-none">
+                    <div class="info-header">
+                        <div class="info-title-wrap">
+                            <span class="info-header-tag">ZIP CODE</span>
+                            <span id="infoTitle" class="info-title">—</span>
+                        </div>
+                        <button id="clearPin" class="btn-close clear-pin" aria-label="Clear pinned ZIP"
+                            title="Clear pinned ZIP"></button>
+                    </div>
+                    <div id="infoPanelBody" class="info-body">
+                        <div id="infoGridContainer">
+                            <div class="info-grid">
+                                <div class="info-row">
+                                    <div class="info-label">Court Case Rate</div>
+                                    <div id="infoCaseRate" class="info-value">—</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Court Case Count</div>
+                                    <div id="infoCaseCount" class="info-value">—</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Median Income</div>
+                                    <div id="infoIncome" class="info-value">—</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Non-Poverty Rate</div>
+                                    <div id="infoPoverty" class="info-value">—</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Health Insurance</div>
+                                    <div id="infoUninsured" class="info-value">—</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Housing</div>
+                                    <div id="infoBurdened" class="info-value">—</div>
+                                </div>
+                                <div class="info-row">
+                                    <div class="info-label">Educational Attainment</div>
+                                    <div id="infoHighSchool" class="info-value">—</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="excludedLabel" class="d-none mt-2">
+                            <span class="badge"
+                                style=" color: #0f0e0eb3; font-size: 11px; font-weight: 550; padding: 4px 8px; border-radius: 6px;">
+                                Data for this area is excluded as it <br> shares boundaries 
+                                with adjacent counties.</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="legend card shadow-sm">
+                    <div class="card-body p-0">
+                        <div id="legendTitle" class="legend-title">Legend</div>
+                        <div id="legendBuckets" class="legend-buckets"></div>
+                    </div>
+                    
+                </div>
+
+            </main>
+        </div>
+    </div>
+</body>
+
+</html>
