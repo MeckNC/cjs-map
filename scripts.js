@@ -1799,11 +1799,36 @@ require([
     }
 
 		  
-function buildInteractiveZipList() {
+
+	function buildInteractiveZipList() {
   interactiveZips = Array.from(geomByZip.keys())
     .filter((z) => !EXCLUDED_ZIPS.has(z))
     .sort();
   focusedZipIndex = -1;
+}
+
+function highlightFocusedZip(zip) {
+  // Remove previous keyboard-only highlights
+  const toRemove = [];
+  selectionGL.graphics.forEach((g) => {
+    if (g.attributes && g.attributes.keyboardHighlight) toRemove.push(g);
+  });
+  toRemove.forEach((g) => selectionGL.remove(g));
+
+  if (!zip) return;
+  const geom = geomByZip.get(zip);
+  if (!geom) return;
+
+  selectionGL.add(
+    new Graphic({
+      geometry: geom,
+      attributes: { keyboardHighlight: true },
+      symbol: new SimpleFillSymbol({
+        color: [0, 0, 0, 0],
+        outline: { color: [255, 255, 0, 1], width: 4 }, // bright yellow outline
+      }),
+    })
+  );
 }
 
 function focusZipByIndex(idx) {
@@ -1813,49 +1838,59 @@ function focusZipByIndex(idx) {
     interactiveZips.length;
   const z = interactiveZips[focusedZipIndex];
   hoverZip = z;
+
   const feat = featureByZip.get(z);
   if (feat) {
     showPanel(feat);
   } else {
     clearPanel();
   }
+  highlightFocusedZip(z);
   refreshAcs();
 }
 
 function setupKeyboardNavigation() {
-  if (!mapEl) return;
+  view.on("key-down", (event) => {
+    const key = event.key;
 
-  mapEl.addEventListener("keydown", (e) => {
+    // Stop ArcGIS default pan/zoom for the keys we control
+    if (
+      key === "ArrowRight" ||
+      key === "ArrowDown" ||
+      key === "ArrowLeft" ||
+      key === "ArrowUp" ||
+      key === "Enter" ||
+      key === " " ||
+      key === "Escape"
+    ) {
+      event.stopPropagation();
+    }
+
     if (!interactiveZips.length) return;
 
-    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-      e.preventDefault();
+    if (key === "ArrowRight" || key === "ArrowDown") {
       focusZipByIndex(focusedZipIndex + 1);
-    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-      e.preventDefault();
+    } else if (key === "ArrowLeft" || key === "ArrowUp") {
       focusZipByIndex(focusedZipIndex - 1);
-    } else if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
+    } else if (key === "Enter" || key === " ") {
       if (hoverZip) togglePin(hoverZip);
-    } else if (e.key === "Escape") {
-      e.preventDefault();
+    } else if (key === "Escape") {
       hoverZip = null;
       clearPanel();
+      highlightFocusedZip(null);
       refreshAcs();
       focusedZipIndex = -1;
     }
   });
-}
-D. Call the setup after data is ready
-Inside the init() function, after buildLayers(); (around line 1906), add:
-
-js
-buildInteractiveZipList();
-setupKeyboardNavigation();
-E. Make info icons focusable + support keyboard tooltips
-At the end of the file (just before init();), replace/extend the existing mouseover/mouseout tooltip code with this improved version:
-
-js
+}	  
+		  
+		  
+		  
+		  
+		  
+		  
+		  
+		  
 function makeInfoIconsAccessible() {
   document.querySelectorAll(".info-icon").forEach((icon) => {
     icon.setAttribute("tabindex", "0");
@@ -1939,46 +1974,11 @@ function showInfoTooltip(icon) {
 }
 
 // Call this after DOM is ready (e.g. at the end of init or after initializeTooltips)
-makeInfoIconsAccessible();
-
-document.addEventListener("mouseover", (e) => {
-  const icon = e.target.closest(".info-icon");
-  if (icon) showInfoTooltip(icon);
-});
-
-document.addEventListener("focusin", (e) => {
-  const icon = e.target.closest(".info-icon");
-  if (icon) showInfoTooltip(icon);
-});
-
-document.addEventListener("mouseout", (e) => {
-  const icon = e.target.closest(".info-icon");
-  if (icon && (!e.relatedTarget || !icon.contains(e.relatedTarget))) {
-    infoCard.style.display = "none";
-  }
-});
-
-document.addEventListener("focusout", (e) => {
-  const icon = e.target.closest(".info-icon");
-  if (icon) {
-    infoCard.style.display = "none";
-  }
-});
-Summary of what the changes do
-File	Change	WCAG benefit
-index.html	Updated help text + map tabindex/role/aria-label	2.1.1, 4.1.2
-styles.css	Visible :focus-visible outlines	2.4.7
-scripts.js	Arrow-key ZIP navigation + Enter/Space to pin + Escape to clear	2.1.1, 2.4.3
-scripts.js	Info icons become focusable and show tooltips on focus	2.1.1, 1.3.1
-Mouse hover and click behavior are preserved. Keyboard users can now tab to the map, use arrow keys to move between ZIP areas, and activate them exactly like a click.
-
-Would you like me to also generate a single complete patched scripts.js file (as a downloadable gist or via a fork), or add a fully accessible ZIP dropdown list as a stronger alternative to arrow-key cycling?
-
-
-
-3 sources
 
 		  
+
+		  
+
 		  
 		  
     view.on("pointer-move", (evt) => {
