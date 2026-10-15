@@ -1866,20 +1866,35 @@ function focusZipByIndex(idx) {
 
 
 
+
+		  
 function setupKeyboardNavigation() {
   console.log("setupKeyboardNavigation called, ZIPs available:", interactiveZips.length);
 
-  view.on("key-down", (event) => {
-    console.log("key-down fired:", event.key, "| interactiveZips:", interactiveZips.length);
+  const mapContainer = view.container || document.getElementById("map");
+  if (!mapContainer) {
+    console.warn("No map container found");
+    return;
+  }
 
-    const key = event.key;
+  // Make sure it can receive focus
+  mapContainer.tabIndex = 0;
+  mapContainer.setAttribute("role", "application");
 
-    // Aggressively stop the event so ArcGIS does not pan
-    event.stopPropagation();
-    if (event.native) {
-      event.native.preventDefault();
-      event.native.stopImmediatePropagation();
-    }
+  // Disable ArcGIS keyboard navigation one more time
+  if (view.navigation && view.navigation.keyboard) {
+    view.navigation.keyboard.enabled = false;
+  }
+
+  mapContainer.addEventListener("keydown", (e) => {
+    console.log("DOM keydown fired:", e.key, "| interactiveZips:", interactiveZips.length);
+
+    const key = e.key;
+
+    // Stop everything
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
 
     if (!interactiveZips.length) return;
 
@@ -1896,6 +1911,10 @@ function setupKeyboardNavigation() {
       refreshAcs();
       focusedZipIndex = -1;
     }
+  });
+
+  mapContainer.addEventListener("focus", () => {
+    console.log("Map container focused");
   });
 }
 		  
