@@ -1753,3 +1753,28 @@ code {
   cursor: pointer;
 }
 
+
+
+
+.zip-list {
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+.zip-list-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 13px;
+  cursor: pointer;
+}
+.zip-list-item:focus-visible {
+  outline: 3px solid #063452;
+  outline-offset: 2px;
+  background: #e0f2fe;
+}

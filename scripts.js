@@ -1815,12 +1815,44 @@ if (mapContainer) {
 
 		  
 
-	function buildInteractiveZipList() {
+function buildInteractiveZipList() {
   interactiveZips = Array.from(geomByZip.keys())
     .filter((z) => !EXCLUDED_ZIPS.has(z))
     .sort();
   focusedZipIndex = -1;
 }
+		  
+		  
+		  
+		  
+function buildZipList() {
+  const container = document.getElementById("zipList");
+  if (!container) return;
+
+  container.innerHTML = "";
+  interactiveZips.forEach((zip, idx) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "zip-list-item";
+    btn.setAttribute("role", "option");
+    btn.setAttribute("data-zip", zip);
+    btn.setAttribute("aria-label", `ZIP ${zip}`);
+    btn.textContent = `ZIP ${zip}`;
+
+    btn.addEventListener("click", () => {
+      focusZipByIndex(idx);
+      togglePin(zip);
+    });
+
+    btn.addEventListener("focus", () => {
+      focusZipByIndex(idx);
+    });
+
+    container.appendChild(btn);
+  });
+}		  
+		  
+		  
 
 function highlightFocusedZip(zip) {
   // Remove previous keyboard-only highlights
@@ -2138,6 +2170,7 @@ function showInfoTooltip(icon) {
         buildCaches();
         buildLayers();
 		  buildInteractiveZipList();
+		  buildZipList();          // ASIDE NAV
 		  setupKeyboardNavigation();
         setBrandSilhouette();
         updateLegend();
