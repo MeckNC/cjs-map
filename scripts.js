@@ -320,10 +320,12 @@ require([
       { metricId: "education_attainment_rate" },
     ];
 
-    function setDashboardYearText() {
-      const dashboardYear = document.getElementById("brandYear");
-      dashboardYear.textContent = `${start_year}-${end_year}`;
-    }
+function setDashboardYearText() {
+  const dashboardYear = document.getElementById("brandYear");
+  if (dashboardYear) {
+    dashboardYear.textContent = `${start_year}-${end_year}`;
+  }
+}
     setDashboardYearText();
 
     function initializeTooltips() {
