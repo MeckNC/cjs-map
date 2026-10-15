@@ -56,8 +56,11 @@
         </header>
         <div class="main">
             <aside class="sidebar">
-                <div class="section-title fw-bold text-uppercase small mb-2" id="cardsHeading">Hover Over or Click a ZIP Area</div>
-                <div class="metric-cards-container" id="metricCardsContainer">
+                
+				<div class="section-title fw-bold text-uppercase small mb-2" id="cardsHeading">Hover, click, or use arrow keys + Enter on a ZIP Area</div>
+
+                
+				<div class="metric-cards-container" id="metricCardsContainer">
                     <div class="metric-card" data-metric-id="case_rate" style="--card-color: #6B8E7F;">
                         <div class="metric-title">
                             <span>Court Case Rate</span>
@@ -181,8 +184,11 @@
                     <div class="card-body p-2">
                         <div class="section-title fw-bold text-uppercase small mb-2" id="demographicsTitle">Demographics</div>
                         <div id="demographicsBody" class="zip-acs-body">
-                            <div class="acs-empty text-muted small">Hover over or click a ZIP code on the map to see its
-                                demographic breakdown.</div>
+                            
+							
+							<div class="acs-empty text-muted small">Hover, click, or use keyboard (arrow keys + Enter) on a ZIP code on the map to see its demographic breakdown.</div>
+
+							
                         </div>
                     </div>
                 </div>
@@ -239,8 +245,12 @@
                         Compare
                     </button>
                 </div>
-                <div id="map"></div>
-                <div id="infoPanel" class="info-panel d-none">
+
+				
+				<div id="map" tabindex="0" role="application" aria-label="Interactive map of Mecklenburg County ZIP codes. Use arrow keys to move between ZIP areas. Press Enter or Space to pin the focused ZIP. Press Escape to clear."></div>
+
+				
+				<div id="infoPanel" class="info-panel d-none">
                     <div class="info-header">
                         <div class="info-title-wrap">
                             <span class="info-header-tag">ZIP CODE</span>

@@ -423,6 +423,19 @@ require([
       },
     });
 
+	  
+	const mapEl = document.getElementById("map");
+	if (mapEl) {
+	  mapEl.setAttribute("tabindex", "0");
+	  mapEl.setAttribute("role", "application");
+	  mapEl.setAttribute(
+		"aria-label",
+		"Interactive map of Mecklenburg County ZIP codes. Use arrow keys to move between ZIP areas. Press Enter or Space to pin the focused ZIP. Press Escape to clear."
+	  );
+	}
+	  
+	  
+	  
     const fixedGL = new GraphicsLayer();
     const searchGL = new GraphicsLayer();
     const selectionGL = new GraphicsLayer();
@@ -439,7 +452,10 @@ require([
       pinnedZip = null,
       pinnedZipB = null,
       hoverZip = null;
-
+	  
+	let focusedZipIndex = -1;
+	let interactiveZips = [];
+	  
     const EXCLUDED_ZIPS = new Set([
       "28104",
       "28107",
@@ -1782,6 +1798,189 @@ require([
       }
     }
 
+		  
+function buildInteractiveZipList() {
+  interactiveZips = Array.from(geomByZip.keys())
+    .filter((z) => !EXCLUDED_ZIPS.has(z))
+    .sort();
+  focusedZipIndex = -1;
+}
+
+function focusZipByIndex(idx) {
+  if (!interactiveZips.length) return;
+  focusedZipIndex =
+    ((idx % interactiveZips.length) + interactiveZips.length) %
+    interactiveZips.length;
+  const z = interactiveZips[focusedZipIndex];
+  hoverZip = z;
+  const feat = featureByZip.get(z);
+  if (feat) {
+    showPanel(feat);
+  } else {
+    clearPanel();
+  }
+  refreshAcs();
+}
+
+function setupKeyboardNavigation() {
+  if (!mapEl) return;
+
+  mapEl.addEventListener("keydown", (e) => {
+    if (!interactiveZips.length) return;
+
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      focusZipByIndex(focusedZipIndex + 1);
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      focusZipByIndex(focusedZipIndex - 1);
+    } else if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      if (hoverZip) togglePin(hoverZip);
+    } else if (e.key === "Escape") {
+      e.preventDefault();
+      hoverZip = null;
+      clearPanel();
+      refreshAcs();
+      focusedZipIndex = -1;
+    }
+  });
+}
+D. Call the setup after data is ready
+Inside the init() function, after buildLayers(); (around line 1906), add:
+
+js
+buildInteractiveZipList();
+setupKeyboardNavigation();
+E. Make info icons focusable + support keyboard tooltips
+At the end of the file (just before init();), replace/extend the existing mouseover/mouseout tooltip code with this improved version:
+
+js
+function makeInfoIconsAccessible() {
+  document.querySelectorAll(".info-icon").forEach((icon) => {
+    icon.setAttribute("tabindex", "0");
+    icon.setAttribute("role", "button");
+    const title = icon.getAttribute("data-title") || "More information";
+    icon.setAttribute("aria-label", title);
+  });
+}
+
+function showInfoTooltip(icon) {
+  const text = icon.getAttribute("data-tooltip");
+  const legendRanges = icon.getAttribute("data-legend-ranges");
+  if (!text) return;
+
+  let tooltipHtml = `<div class="tooltip-desc">${text}</div>`;
+
+  if (legendRanges) {
+    try {
+      const ranges = JSON.parse(legendRanges);
+      tooltipHtml += `<div class="tooltip-divider" style="height:1px; background:rgba(0,0,0,0.1); margin: 6px 0;"></div>`;
+      tooltipHtml += `<div class="tooltip-ranges">`;
+      for (const r of ranges) {
+        const labelText = r.text ? r.text : `${r.lo} – ${r.hi}`;
+        tooltipHtml += `<div class="tooltip-range-row" style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+          <span class="swatch" style="background:${r.color}; border: 1px solid rgba(0,0,0,0.1); flex-shrink:0;"></span>
+          <span class="tooltip-range-val">${labelText}</span>
+        </div>`;
+      }
+      tooltipHtml += `</div>`;
+    } catch (_) {}
+  }
+
+  infoCard.innerHTML = tooltipHtml;
+  infoCard.style.display = "block";
+  infoCard.style.height = "auto";
+  infoCard.style.minHeight = "auto";
+  infoCard.style.width = "auto";
+  infoCard.style.maxWidth = legendRanges ? "300px" : "240px";
+
+  // Positioning logic (same as original mouseover)
+  const sidebar = document.querySelector(".sidebar");
+  const isInsideSidebar = icon.closest(".sidebar");
+  const iconRect = icon.getBoundingClientRect();
+
+  if (isInsideSidebar && sidebar) {
+    const sidebarRect = sidebar.getBoundingClientRect();
+    if (sidebarRect.left > 280) {
+      const left = sidebarRect.left - infoCard.offsetWidth - 10;
+      let top = iconRect.top + iconRect.height / 2 - infoCard.offsetHeight / 2;
+      if (top < 10) top = 10;
+      if (top + infoCard.offsetHeight > window.innerHeight - 10) {
+        top = window.innerHeight - infoCard.offsetHeight - 10;
+      }
+      infoCard.style.left = left + "px";
+      infoCard.style.top = top + "px";
+    } else {
+      infoCard.style.maxWidth = "min(240px, calc(100vw - 24px))";
+      let left = Math.max(
+        10,
+        Math.min(
+          iconRect.left + iconRect.width / 2 - infoCard.offsetWidth / 2,
+          window.innerWidth - infoCard.offsetWidth - 10
+        )
+      );
+      let top = iconRect.top - infoCard.offsetHeight - 8;
+      if (top < 10) top = iconRect.bottom + 8;
+      infoCard.style.left = left + "px";
+      infoCard.style.top = top + "px";
+    }
+  } else {
+    let top = iconRect.top - infoCard.offsetHeight - 10;
+    let left = iconRect.left - 12;
+    if (top < 10) top = iconRect.bottom + 8;
+    if (left < 10) left = 10;
+    if (left + infoCard.offsetWidth > window.innerWidth - 10) {
+      left = window.innerWidth - infoCard.offsetWidth;
+    }
+    infoCard.style.top = top - 5 + "px";
+    infoCard.style.left = "1rem";
+  }
+}
+
+// Call this after DOM is ready (e.g. at the end of init or after initializeTooltips)
+makeInfoIconsAccessible();
+
+document.addEventListener("mouseover", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon) showInfoTooltip(icon);
+});
+
+document.addEventListener("focusin", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon) showInfoTooltip(icon);
+});
+
+document.addEventListener("mouseout", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon && (!e.relatedTarget || !icon.contains(e.relatedTarget))) {
+    infoCard.style.display = "none";
+  }
+});
+
+document.addEventListener("focusout", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon) {
+    infoCard.style.display = "none";
+  }
+});
+Summary of what the changes do
+File	Change	WCAG benefit
+index.html	Updated help text + map tabindex/role/aria-label	2.1.1, 4.1.2
+styles.css	Visible :focus-visible outlines	2.4.7
+scripts.js	Arrow-key ZIP navigation + Enter/Space to pin + Escape to clear	2.1.1, 2.4.3
+scripts.js	Info icons become focusable and show tooltips on focus	2.1.1, 1.3.1
+Mouse hover and click behavior are preserved. Keyboard users can now tab to the map, use arrow keys to move between ZIP areas, and activate them exactly like a click.
+
+Would you like me to also generate a single complete patched scripts.js file (as a downloadable gist or via a fork), or add a fully accessible ZIP dropdown list as a stronger alternative to arrow-key cycling?
+
+
+
+3 sources
+
+		  
+		  
+		  
     view.on("pointer-move", (evt) => {
       pendingEvt = { x: evt.x, y: evt.y };
       if (!rafQueued) {
@@ -1904,6 +2103,8 @@ require([
 
         buildCaches();
         buildLayers();
+		  buildInteractiveZipList();
+		  setupKeyboardNavigation();
         setBrandSilhouette();
         updateLegend();
         clearPanel();
@@ -2092,14 +2293,36 @@ require([
         }
       }
     });
-    document.addEventListener("mouseout", (e) => {
-      const icon = e.target.closest(".info-icon");
-      if (icon && (!e.relatedTarget || !icon.contains(e.relatedTarget))) {
-        infoCard.style.display = "none";
-        infoCard.style.height = "auto";
-        infoCard.style.minHeight = "auto";
-      }
-    });
+// Call this after DOM is ready (e.g. at the end of init or after initializeTooltips)
+makeInfoIconsAccessible();
+
+document.addEventListener("mouseover", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon) showInfoTooltip(icon);
+});
+
+document.addEventListener("focusin", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon) showInfoTooltip(icon);
+});
+
+document.addEventListener("mouseout", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon && (!e.relatedTarget || !icon.contains(e.relatedTarget))) {
+    infoCard.style.display = "none";
+  }
+});
+
+document.addEventListener("focusout", (e) => {
+  const icon = e.target.closest(".info-icon");
+  if (icon) {
+    infoCard.style.display = "none";
+  }
+});	  
+	  
+	  
+	  
+	  
     init();
   })();
 });

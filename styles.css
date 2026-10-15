@@ -1724,3 +1724,32 @@ code {
   color: #064e3b;
 }
 
+
+
+
+
+
+
+/* WCAG keyboard focus styles */
+#map:focus-visible {
+  outline: 3px solid var(--base);
+  outline-offset: 2px;
+}
+
+.info-icon:focus-visible {
+  outline: 2px solid var(--base);
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+.btn:focus-visible,
+.search-input:focus-visible,
+.suggestion-item:focus-visible {
+  outline: 2px solid var(--base);
+  outline-offset: 2px;
+}
+
+.info-icon {
+  cursor: pointer;
+}
+
