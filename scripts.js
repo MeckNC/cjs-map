@@ -422,6 +422,21 @@ require([
         fillOpacity: 0.12,
       },
     });
+	  
+	  // Disable ArcGIS default keyboard navigation so we control the arrow keys
+if (view.navigation && view.navigation.keyboard) {
+  view.navigation.keyboard.enabled = false;
+}
+
+const mapContainer = document.getElementById("map");
+if (mapContainer) {
+  mapContainer.tabIndex = 0;
+  mapContainer.addEventListener("focus", () => console.log("Map focused"));
+}
+	  
+	  
+	  
+	  
 
 	  
 	const mapEl = document.getElementById("map");
@@ -1849,30 +1864,21 @@ function focusZipByIndex(idx) {
   refreshAcs();
 }
 
-Add the logs inside the existing setupKeyboardNavigation function like this:
 
-js
+
 function setupKeyboardNavigation() {
-  // ← add the first log here, right at the top of the function
   console.log("setupKeyboardNavigation called, ZIPs available:", interactiveZips.length);
 
   view.on("key-down", (event) => {
-    // ← add the second log here, at the top of the key-down handler
     console.log("key-down fired:", event.key, "| interactiveZips:", interactiveZips.length);
 
     const key = event.key;
 
-    // Stop ArcGIS default pan/zoom for the keys we control
-    if (
-      key === "ArrowRight" ||
-      key === "ArrowDown" ||
-      key === "ArrowLeft" ||
-      key === "ArrowUp" ||
-      key === "Enter" ||
-      key === " " ||
-      key === "Escape"
-    ) {
-      event.stopPropagation();
+    // Aggressively stop the event so ArcGIS does not pan
+    event.stopPropagation();
+    if (event.native) {
+      event.native.preventDefault();
+      event.native.stopImmediatePropagation();
     }
 
     if (!interactiveZips.length) return;
@@ -1891,7 +1897,7 @@ function setupKeyboardNavigation() {
       focusedZipIndex = -1;
     }
   });
-}}	  
+}
 		  
 		  
 		  
