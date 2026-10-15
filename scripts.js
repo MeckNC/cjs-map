@@ -1849,8 +1849,17 @@ function focusZipByIndex(idx) {
   refreshAcs();
 }
 
+Add the logs inside the existing setupKeyboardNavigation function like this:
+
+js
 function setupKeyboardNavigation() {
+  // ← add the first log here, right at the top of the function
+  console.log("setupKeyboardNavigation called, ZIPs available:", interactiveZips.length);
+
   view.on("key-down", (event) => {
+    // ← add the second log here, at the top of the key-down handler
+    console.log("key-down fired:", event.key, "| interactiveZips:", interactiveZips.length);
+
     const key = event.key;
 
     // Stop ArcGIS default pan/zoom for the keys we control
@@ -1882,7 +1891,7 @@ function setupKeyboardNavigation() {
       focusedZipIndex = -1;
     }
   });
-}	  
+}}	  
 		  
 		  
 		  
