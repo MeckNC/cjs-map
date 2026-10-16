@@ -69,6 +69,35 @@
   function start(root, __require) {
     var __root = root, __ctx = { root: root, view: null };
     var document = scopedDocument(root);
+    // Repair markup CKEditor 5 mangles: it empties <button>s, leaving the icon/label as loose siblings
+    // (often wrapped in <p>). Remove the strays and rebuild the button contents.
+    (function repairButtons() {
+      var defs = {
+        resetBtn: '<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2.5v4h4"/><path d="M2.7 6.2a6 6 0 1 1 1.2 5.8"/></svg> Reset',
+        compareBtn: '<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="5" height="10" rx="1"/><rect x="9" y="3" width="5" height="10" rx="1"/></svg> Compare'
+      };
+      Object.keys(defs).forEach(function (k) {
+        var b = root.querySelector('#' + IDP + k);
+        if (!b) return;
+        var label = k === 'resetBtn' ? 'Reset' : 'Compare';
+        var host = (b.parentElement && b.parentElement.tagName === 'P') ? b.parentElement : b;
+        if (host !== b) { host.parentElement.insertBefore(b, host); host.remove(); }
+        var n = b.nextSibling;
+        while (n) {
+          var nx = n.nextSibling, t = (n.textContent || '').replace(/\s+/g, ' ').trim();
+          if (n.nodeType === 3 && !t) { n.remove(); }
+          else if (n.nodeName.toLowerCase() === 'svg' && !n.id) { n.remove(); }
+          else if ((n.nodeName === 'P' || n.nodeType === 3) && (t === label || t === '')) { n.remove(); }
+          else break;
+          n = nx;
+        }
+        if (!b.querySelector('svg')) b.innerHTML = defs[k];
+      });
+      // CKEditor also drops &nbsp; into empty divs/spans; strip stray empty <p>s.
+      Array.prototype.forEach.call(root.querySelectorAll('p'), function (pp) {
+        if (!pp.textContent.replace(/\u00a0|\s/g, '') && !pp.querySelector('*:not(br)')) pp.remove();
+      });
+    })();
     NS.instances.push(__ctx);
     // ---------------- config (was 01M52SKFBS8ACSYMGZ6NGRYSCZ.js) ----------------
 const YEAR_START = '2023';

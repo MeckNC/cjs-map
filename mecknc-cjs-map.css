@@ -1794,3 +1794,7 @@
 @container mcjs (max-width: 768px){ #mecknc-cjs-map .app{overflow:auto;} }
 /* ---- visible keyboard focus ---- */
 #mecknc-cjs-map button:focus-visible, #mecknc-cjs-map input:focus-visible, #mecknc-cjs-map [tabindex]:focus-visible, #mecknc-cjs-map .zip-list-item:focus-visible, #mecknc-cjs-map .info-icon:focus-visible{outline:3px solid #005fcc !important;outline-offset:2px;}
+
+/* CKEditor-safety: neutralize wrapper <p> and stray nbsp spacing */
+#mecknc-cjs-map .topbar p, #mecknc-cjs-map .map-top-controls p { margin: 0; }
+#mecknc-cjs-map .brand-title { white-space: nowrap; }
