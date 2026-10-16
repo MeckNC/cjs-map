@@ -9663,6 +9663,42 @@ function setDashboardYearText() {
       searchInput = document.getElementById("searchInput"),
       searchSuggestions = document.getElementById("searchSuggestions");
 
+    /* ---- WCAG semantics added by county (headings, combobox, live region, decorative icons) ---- */
+    (function mcjsA11y() {
+      try {
+        if (searchInput && searchSuggestions) {
+          searchSuggestions.setAttribute("role", "listbox");
+          searchSuggestions.setAttribute("aria-label", "ZIP suggestions");
+          searchInput.setAttribute("role", "combobox");
+          searchInput.setAttribute("aria-autocomplete", "list");
+          searchInput.setAttribute("aria-controls", searchSuggestions.id || "mcjs-searchSuggestions");
+          searchInput.setAttribute("aria-expanded", "false");
+        }
+        const root = (brandIcon && brandIcon.closest && brandIcon.closest("#mecknc-cjs-map")) || window.document.getElementById("mecknc-cjs-map");
+        if (root) {
+          const bt = root.querySelector(".brand-title");
+          if (bt) { bt.setAttribute("role", "heading"); bt.setAttribute("aria-level", "2"); }
+          root.querySelectorAll(".section-title").forEach((el) => { el.setAttribute("role", "heading"); el.setAttribute("aria-level", "3"); });
+          const lt = root.querySelector(".legend-title");
+          if (lt) { lt.setAttribute("role", "heading"); lt.setAttribute("aria-level", "3"); }
+          if (!root.querySelector("#mcjs-announcer")) {
+            const a = window.document.createElement("div");
+            a.id = "mcjs-announcer"; a.className = "visually-hidden";
+            a.setAttribute("role", "status"); a.setAttribute("aria-live", "polite"); a.setAttribute("aria-atomic", "true");
+            root.appendChild(a);
+          }
+        }
+      } catch (e) {}
+    })();
+    function mcjsAnnounce(msg) {
+      try {
+        const a = window.document.getElementById("mcjs-announcer");
+        if (!a) return;
+        a.textContent = "";
+        setTimeout(() => { a.textContent = msg; }, 50);
+      } catch (e) {}
+    }
+
     /* ---- Caches (populated after data load) ---- */
     const zipDataCache = new Map(); // zip → { metricId: { value, formatted, countyAvg, fmtAvg } }
     const countyAvgCache = new Map(); // metricId → number
@@ -10060,6 +10096,16 @@ function setDashboardYearText() {
         el.setAttribute("aria-selected", on ? "true" : "false");
         if (on && z === pinnedZip) first = el;
       });
+      // roving tabindex: one tab stop for the whole list
+      const items = list.querySelectorAll(".zip-list-item");
+      let stop = first || list.querySelector(".zip-list-item.mcjs-roving") || items[0];
+      items.forEach((el) => el.setAttribute("tabindex", el === stop ? "0" : "-1"));
+      list.setAttribute("tabindex", "-1");
+      const key = (pinnedZip || "") + "|" + (pinnedZipB || "");
+      if (syncZipListActive.__last !== undefined && syncZipListActive.__last !== key) {
+        mcjsAnnounce(pinnedZip ? (pinnedZipB ? `Comparing ZIP ${pinnedZip} and ZIP ${pinnedZipB}.` : `ZIP ${pinnedZip} selected. Details shown below the map.`) : "Selection cleared.");
+      }
+      syncZipListActive.__last = key;
       if (first) {
         // scroll inside the list only, never the page
         const lr = list.getBoundingClientRect(), er = first.getBoundingClientRect();
@@ -10810,6 +10856,7 @@ function setDashboardYearText() {
     let activeSuggestionIdx = -1;
 
     function hideSuggestions() {
+      if (searchInput) searchInput.setAttribute("aria-expanded", "false");
       if (searchSuggestions) {
         searchSuggestions.classList.add("d-none");
         searchSuggestions.innerHTML = "";
@@ -10849,6 +10896,8 @@ function setDashboardYearText() {
         .join("");
 
       searchSuggestions.classList.remove("d-none");
+      if (searchInput) searchInput.setAttribute("aria-expanded", "true");
+      searchSuggestions.querySelectorAll(".suggestion-item").forEach((it, i) => { it.setAttribute("role", "option"); if (!it.id) it.id = "mcjs-sugg-" + i; });
 
       searchSuggestions
         .querySelectorAll(".suggestion-item[data-zip]")
@@ -10948,7 +10997,7 @@ function setDashboardYearText() {
     function setBrandSilhouette() {
       const path = buildSilhouette();
       if (!path || !brandIcon) return;
-      brandIcon.innerHTML = `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="#211746" fill-rule="evenodd" opacity="0.92"/></svg>`;
+      brandIcon.innerHTML = `<svg aria-hidden="true" focusable="false" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="#211746" fill-rule="evenodd" opacity="0.92"/></svg>`;
       const fav = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#fff"/><path d="${path}" fill="#211746" fill-rule="evenodd"/></svg>`;
       let link = document.querySelector("link[rel='icon']");
       if (!link) {
@@ -11032,6 +11081,18 @@ function buildZipList() {
 
     btn.addEventListener("focus", () => {
       focusZipByIndex(idx);
+      container.querySelectorAll(".zip-list-item").forEach((el) => { el.setAttribute("tabindex", el === btn ? "0" : "-1"); el.classList.toggle("mcjs-roving", el === btn); });
+    });
+
+    btn.addEventListener("keydown", (e) => {
+      const all = Array.from(container.querySelectorAll(".zip-list-item"));
+      const i = all.indexOf(btn);
+      let n = -1;
+      if (e.key === "ArrowDown" || e.key === "ArrowRight") n = Math.min(all.length - 1, i + 1);
+      else if (e.key === "ArrowUp" || e.key === "ArrowLeft") n = Math.max(0, i - 1);
+      else if (e.key === "Home") n = 0;
+      else if (e.key === "End") n = all.length - 1;
+      if (n >= 0) { e.preventDefault(); all[n].focus({ preventScroll: true }); all[n].scrollIntoView({ block: "nearest", inline: "nearest" }); }
     });
 
     container.appendChild(btn);
@@ -11541,11 +11602,25 @@ document.addEventListener("focusin", (e) => {
   if (icon) showInfoTooltip(icon);
 });
 
+let __mcjsTipTimer = null;
+function __mcjsHideTipSoon() { clearTimeout(__mcjsTipTimer); __mcjsTipTimer = setTimeout(() => { infoCard.style.display = "none"; }, 300); }
+infoCard.addEventListener("mouseenter", () => clearTimeout(__mcjsTipTimer));
+infoCard.addEventListener("mouseleave", __mcjsHideTipSoon);
+document.addEventListener("mouseover", (e) => { if (e.target.closest && e.target.closest(".info-icon")) clearTimeout(__mcjsTipTimer); });
 document.addEventListener("mouseout", (e) => {
   const icon = e.target.closest(".info-icon");
-  if (icon && (!e.relatedTarget || !icon.contains(e.relatedTarget))) {
-    infoCard.style.display = "none";
+  if (icon && (!e.relatedTarget || (!icon.contains(e.relatedTarget) && !infoCard.contains(e.relatedTarget)))) {
+    __mcjsHideTipSoon();
   }
+});
+// WCAG 1.4.13 / 2.1.2: Escape dismisses tooltip, hover panel and suggestions
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Escape") return;
+  clearTimeout(__mcjsTipTimer);
+  infoCard.style.display = "none";
+  const ip = document.getElementById("infoPanel");
+  if (ip) ip.classList.add("d-none");
+  try { hideSuggestions(); } catch (err) {}
 });
 
 document.addEventListener("focusout", (e) => {

@@ -711,7 +711,7 @@
   font-weight: 850;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(0, 0, 0, 0.3);
   color: #ffffff;
   padding: 2px 6px;
   border-radius: 4px;
@@ -1863,3 +1863,13 @@
 #mecknc-cjs-map .btn-map-reset:focus-visible, #mecknc-cjs-map .btn-map-compare:focus-visible{outline:2px solid var(--mc-btn) !important;outline-offset:2px !important;}
 #mecknc-cjs-map .btn-map-reset svg, #mecknc-cjs-map .btn-map-compare svg{color:inherit;stroke:currentColor;}
 #mecknc-cjs-map .btn-map-reset svg [fill]:not([fill="none"]), #mecknc-cjs-map .btn-map-compare svg [fill]:not([fill="none"]){fill:currentColor;}
+
+/* ---- WCAG fixes ---- */
+/* 1.4.10 reflow: border must not add width past 100% */
+#mecknc-cjs-map{box-sizing:border-box;max-width:100%;}
+/* 1.4.11 non-text contrast: search field boundary >= 3:1 */
+#mecknc-cjs-map .search-wrap{border-color:var(--mc-text-adj);}
+/* 1.4.12 text spacing: demographic labels wrap instead of being cut off */
+#mecknc-cjs-map .demo-label{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;}
+/* tooltip card must be hoverable (1.4.13) */
+#mecknc-cjs-map .info-tooltip-card{pointer-events:auto;}
