@@ -1824,3 +1824,9 @@
   #mecknc-cjs-map .map-wrap{height:min(420px,70svh);min-height:300px;flex:none;}
   #mecknc-cjs-map .sidebar{height:auto;overflow:visible;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));}
 }
+
+/* ---- selected ZIP in the sidebar list ---- */
+#mecknc-cjs-map .zip-list-item.is-active{background:#dbeafe;border-color:#2563eb;color:#063452;font-weight:700;box-shadow:inset 4px 0 0 #2563eb;}
+#mecknc-cjs-map .zip-list-item.is-active-b{background:#fef3c7;border-color:#d97706;box-shadow:inset 4px 0 0 #d97706;}
+#mecknc-cjs-map .zip-list-item:hover{border-color:#94a3b8;}
+#mecknc-cjs-map #mcjs-zipList, #mecknc-cjs-map .zip-list{position:relative;overscroll-behavior:contain;}

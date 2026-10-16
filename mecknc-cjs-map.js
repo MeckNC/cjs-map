@@ -10048,7 +10048,30 @@ function setDashboardYearText() {
     
     renderAcsTooltip();
 
+    function syncZipListActive() {
+      const list = document.getElementById("zipList");
+      if (!list || !list.querySelectorAll) return;
+      let first = null;
+      list.querySelectorAll(".zip-list-item").forEach((el) => {
+        const z = el.getAttribute("data-zip");
+        const on = !!z && (z === pinnedZip || z === pinnedZipB);
+        el.classList.toggle("is-active", on);
+        el.classList.toggle("is-active-b", on && z === pinnedZipB && z !== pinnedZip);
+        el.setAttribute("aria-selected", on ? "true" : "false");
+        if (on && z === pinnedZip) first = el;
+      });
+      if (first) {
+        // scroll inside the list only, never the page
+        const lr = list.getBoundingClientRect(), er = first.getBoundingClientRect();
+        const top = er.top - lr.top + list.scrollTop, h = er.height;
+        if (top < list.scrollTop) list.scrollTop = top - 4;
+        else if (top + h > list.scrollTop + list.clientHeight) list.scrollTop = top + h - list.clientHeight + 4;
+      }
+    }
+    try { window.__mcjsSyncZipList = syncZipListActive; } catch (e) {}
+
     function highlightPins() {
+      try { syncZipListActive(); } catch (e) {}
       selectionGL.removeAll();
       if (pinHandle) {
         pinHandle.remove();
@@ -11013,6 +11036,7 @@ function buildZipList() {
 
     container.appendChild(btn);
   });
+  try { syncZipListActive(); } catch (e) {}
 }		  
 		  
 		  
