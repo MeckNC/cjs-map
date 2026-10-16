@@ -9223,22 +9223,22 @@ __require([
     const tooltips = TOOLTIPS;
     const start_year = YEAR_START;
     const end_year = YEAR_END;
-    const BUCKET_COLORS = ["#6B8E7F", "#4A8A8A", "#2C5F7C"];
+    const BUCKET_COLORS = ["#53b7d9", "#00768a", "#001e62"]; // brand ramp: teal-light, teal, logo blue
     const EARTH_TO_SKY = [
-      "#6B8E7F",
-      "#4A8A8A",
-      "#2C5F7C",
-      "#6B4E63",
-      "#B5694A",
-      "#6B4423",
+      "#5aa3d2",
+      "#00768a",
+      "#001e62",
+      "#211746",
+      "#d93838",
+      "#c1962e",
     ];
     const DEMO_COLORS = {
-      white_nh_pct: "#2C5F7C",
-      black_nh_pct: "#B5694A",
-      hispanic_pct: "#4A8A8A",
-      asian_nh_pct: "#6B4423",
-      two_or_more_races_nh_pct: "#6B8E7F",
-      other_race_nh_pct: "#6B4E63",
+      white_nh_pct: "#001e62",
+      black_nh_pct: "#d93838",
+      hispanic_pct: "#00768a",
+      asian_nh_pct: "#c1962e",
+      two_or_more_races_nh_pct: "#5aa3d2",
+      other_race_nh_pct: "#211746",
     };
 
     function num(v) {
@@ -9679,15 +9679,15 @@ function setDashboardYearText() {
     }
 
     function getZipColor(z) {
-      if (!z) return "#6B8E7F";
-      if (EXCLUDED_ZIPS.has(z)) return "#c4b5a5";
+      if (!z) return "#53b7d9";
+      if (EXCLUDED_ZIPS.has(z)) return "#a1a1a4";
       const v = getVal(z);
       if (v === null || !currentBreaks || currentBreaks.length < 2)
-        return "#DCCFC0";
+        return "#c9c9c9";
       for (let i = 0; i < currentBreaks.length - 1; i++) {
         if (v <= currentBreaks[i + 1]) return BUCKET_COLORS[i];
       }
-      return BUCKET_COLORS[BUCKET_COLORS.length - 1] || "#6B8E7F";
+      return BUCKET_COLORS[BUCKET_COLORS.length - 1] || "#53b7d9";
     }
 
     function getCountyAvg(metric) {
@@ -9922,8 +9922,8 @@ function setDashboardYearText() {
         field: "val",
         defaultSymbol: {
           type: "simple-fill",
-          color: fillColor("#d1d5db", 0.8),
-          outline: { color: [156, 163, 175, 1], width: 1.4 },
+          color: fillColor("#c9c9c9", 0.8),
+          outline: { color: [161, 161, 164, 1], width: 1.4 },
         },
         classBreakInfos: infos,
       };
@@ -9931,7 +9931,7 @@ function setDashboardYearText() {
 
     function fixedSymbol() {
       return new SimpleFillSymbol({
-        color: fillColor("#c4b5a5", 0.95),
+        color: fillColor("#a1a1a4", 0.95),
         outline: { color: "#faf9f8", width: 1.6 },
       });
     }
@@ -10089,7 +10089,7 @@ function setDashboardYearText() {
             new Graphic({
               geometry: g,
               symbol: new SimpleFillSymbol({
-                color: [59, 130, 246, 0.25],
+                color: [33, 23, 70, 0.22],
                 outline: { color: [255, 255, 255, 1], width: 4.5 },
               }),
             }),
@@ -10099,7 +10099,7 @@ function setDashboardYearText() {
               geometry: g,
               symbol: new SimpleFillSymbol({
                 color: [0, 0, 0, 0],
-                outline: { color: [59, 130, 246, 1], width: 2 },
+                outline: { color: [33, 23, 70, 1], width: 2.5 },
               }),
             }),
           );
@@ -10113,7 +10113,7 @@ function setDashboardYearText() {
             new Graphic({
               geometry: gB,
               symbol: new SimpleFillSymbol({
-                color: [255, 190, 0, 0.22],
+                color: [217, 56, 56, 0.2],
                 outline: { color: [255, 255, 255, 1], width: 4.5 },
               }),
             }),
@@ -10123,7 +10123,7 @@ function setDashboardYearText() {
               geometry: gB,
               symbol: new SimpleFillSymbol({
                 color: [0, 0, 0, 0],
-                outline: { color: [217, 119, 6, 1], width: 2 },
+                outline: { color: [217, 56, 56, 1], width: 2.5 },
               }),
             }),
           );
@@ -10163,7 +10163,7 @@ function setDashboardYearText() {
         }
         rangeData.push({
           text: "Excluded Area",
-          color: "#c4b5a5",
+          color: "#a1a1a4",
         });
         legendInfoIcon.setAttribute(
           "data-legend-ranges",
@@ -10182,8 +10182,8 @@ function setDashboardYearText() {
       }
 
       html += `<div class="legend-row mt-1" style="border-top: 1px solid rgba(0,0,0,0.08); padding-top: 5px;">
-        <span class="swatch" style="background:#c4b5a5; border: 1px solid #a89887;"></span>
-        <span style="color:#64748b; font-size:11.5px;">Excluded Area</span>
+        <span class="swatch" style="background:#a1a1a4; border: 1px solid #5d594d;"></span>
+        <span style="color:#5d594d; font-size:11.5px;">Excluded Area</span>
       </div>`;
 
       legendBuckets.innerHTML = html;
@@ -10215,12 +10215,12 @@ function setDashboardYearText() {
         deltaEl.classList.remove("skeleton");
         if (value === null || countyAvg === null) {
           deltaEl.className = "delta";
-          deltaEl.innerHTML = `<span style="color:#9ca3af; font-size:11px;">—</span>`;
+          deltaEl.innerHTML = `<span style="color:#5d594d; font-size:11px;">—</span>`;
         } else {
           const diff = value - countyAvg;
           if (Math.abs(diff) < 0.05) {
             deltaEl.className = "delta";
-            deltaEl.innerHTML = `<span style="color:#6b7280; font-size:11px;">${fmt(0, metric.format)}</span>`;
+            deltaEl.innerHTML = `<span style="color:#5d594d; font-size:11px;">${fmt(0, metric.format)}</span>`;
           } else {
             const isUp = diff > 0;
             const isGood =
@@ -10249,7 +10249,7 @@ function setDashboardYearText() {
       if (targetZip) {
         if (EXCLUDED_ZIPS.has(targetZip)) {
           if (cardsHeading)
-            cardsHeading.innerHTML = `ZIP ${targetZip} <span class="badge" style="background:#c4b5a5;color:#ffffff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;vertical-align:1px;">EXCLUDED</span>`;
+            cardsHeading.innerHTML = `ZIP ${targetZip} <span class="badge" style="background:#5d594d;color:#ffffff;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;vertical-align:1px;">EXCLUDED</span>`;
           for (const cfg of METRIC_CARDS) {
             const metric = metricCatalog.find((m) => m.id === cfg.metricId);
             if (!metric) continue;
@@ -10319,7 +10319,7 @@ function setDashboardYearText() {
             ? cached[m.id]?.value || 0
             : getVal(targetZip, m) || 0;
           totalPct += val;
-          const color = DEMO_COLORS[m.id] || "#cbd5e1";
+          const color = DEMO_COLORS[m.id] || "#a1a1a4";
           if (val > 0) {
             barHtml += `<div class="demo-segment" style="width:${val}%; background:${color};" title="${m.label}: ${fmt(val, "percent")}"></div>`;
           }
@@ -10331,7 +10331,7 @@ function setDashboardYearText() {
         }
         if (totalPct < 99.5) {
           const other = Math.max(0, 100 - totalPct);
-          barHtml += `<div class="demo-segment" style="width:${other}%; background:#e5e7eb;" title="Other: ${fmt(other, "percent")}"></div>`;
+          barHtml += `<div class="demo-segment" style="width:${other}%; background:#c9c9c9;" title="Other: ${fmt(other, "percent")}"></div>`;
         }
         barHtml += `</div>`;
         legendHtml += `</div>`;
@@ -10796,7 +10796,7 @@ function setDashboardYearText() {
           geometry: new Point({ longitude: lng, latitude: lat }),
           symbol: new SimpleMarkerSymbol({
             style: "circle",
-            color: [168, 85, 247, 1],
+            color: [0, 118, 138, 1],
             size: 13,
             outline: { color: "#ffffff", width: 3 },
           }),
@@ -10948,8 +10948,8 @@ function setDashboardYearText() {
     function setBrandSilhouette() {
       const path = buildSilhouette();
       if (!path || !brandIcon) return;
-      brandIcon.innerHTML = `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="#285206" fill-rule="evenodd" opacity="0.92"/></svg>`;
-      const fav = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#fff"/><path d="${path}" fill="#285206" fill-rule="evenodd"/></svg>`;
+      brandIcon.innerHTML = `<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="${path}" fill="#211746" fill-rule="evenodd" opacity="0.92"/></svg>`;
+      const fav = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="6" fill="#fff"/><path d="${path}" fill="#211746" fill-rule="evenodd"/></svg>`;
       let link = document.querySelector("link[rel='icon']");
       if (!link) {
         link = document.createElement("link");
@@ -11053,16 +11053,16 @@ function highlightFocusedZip(zip) {
   const geom = geomByZip.get(zip);
   if (!geom) return;
 
-  selectionGL.add(
-    new Graphic({
-      geometry: geom,
-      attributes: { keyboardHighlight: true },
-      symbol: new SimpleFillSymbol({
-        color: [0, 0, 0, 0],
-        outline: { color: [255, 255, 0, 1], width: 4 }, // bright yellow outline
-      }),
-    })
-  );
+  // two-ring focus (white halo + brand purple) so it meets 3:1 on every ramp color
+  [[[255, 255, 255, 1], 6], [[33, 23, 70, 1], 3]].forEach(([c, w]) => {
+    selectionGL.add(
+      new Graphic({
+        geometry: geom,
+        attributes: { keyboardHighlight: true },
+        symbol: new SimpleFillSymbol({ color: [0, 0, 0, 0], outline: { color: c, width: w } }),
+      })
+    );
+  });
 }
 
 function focusZipByIndex(idx) {
