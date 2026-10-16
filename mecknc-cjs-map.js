@@ -11097,6 +11097,17 @@ function buildZipList() {
 
     container.appendChild(btn);
   });
+  if (!container.__mcjsBlur) {
+    container.__mcjsBlur = true;
+    container.addEventListener("focusout", (e) => {
+      if (e.relatedTarget && container.contains(e.relatedTarget)) return;
+      hoverZip = null;
+      try { highlightFocusedZip(null); } catch (err) {}
+      clearPanel();
+      currentAcsKey = "";
+      refreshAcs();
+    });
+  }
   try { syncZipListActive(); } catch (e) {}
 }		  
 		  
@@ -11260,7 +11271,7 @@ function showInfoTooltip(icon) {
     });
 
     view.on("pointer-leave", () => {
-      pendingEvt = null;
+      try { pendingEvt = null; } catch (e) {}
       rafQueued = false;
       hoverZip = null;
       clearPanel();
@@ -11478,6 +11489,12 @@ setTimeout(() => {
     function resetView() {
       isCompareMode = false;
       currentAcsKey = "";
+      // drop transient hover/keyboard-focus state so panels return to the first-load view
+      hoverZip = null;
+      try { pendingEvt = null; } catch (e) {}
+      try { focusedZipIndex = -1; } catch (e) {}
+      try { highlightFocusedZip(null); } catch (e) {}
+      try { infoCard.style.display = "none"; } catch (e) {}
       updateCompareBtnUI();
       if (view) {
         if (initialViewExtent) {
@@ -11491,6 +11508,9 @@ setTimeout(() => {
       hideSuggestions();
       clearSearchMarker();
       if (statusEl) statusEl.innerHTML = "";
+      if (infoPanel) infoPanel.classList.add("d-none");
+      currentAcsKey = "";
+      refreshAcs();
     }
     const compareBtn = document.getElementById("compareBtn");
     if (compareBtn) {
