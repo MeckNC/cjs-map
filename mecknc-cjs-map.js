@@ -44,7 +44,14 @@
   function scopedDocument(root) {
     var fakeHead = realDocument.createElement("div"); // swallows the original favicon rewrite
     return {
-      getElementById: function (id) { return root.querySelector("#" + CSS.escape(IDP + id)); },
+      getElementById: function (id) {
+        var el = root.querySelector("#" + CSS.escape(IDP + id));
+        if (el) return el;
+        // CKEditor 5 can strip empty elements; recreate missing ones (hidden) so the map never crashes.
+        if (!fakeHead._stubs) fakeHead._stubs = {};
+        if (!fakeHead._stubs[id]) { var st = realDocument.createElement("span"); st.id = IDP + id; st.hidden = true; root.appendChild(st); fakeHead._stubs[id] = st; }
+        return fakeHead._stubs[id];
+      },
       querySelector: function (s) { return root.querySelector(s); },
       querySelectorAll: function (s) { return root.querySelectorAll(s); },
       createElement: function (t) { return realDocument.createElement(t); },
