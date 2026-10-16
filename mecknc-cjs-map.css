@@ -1797,4 +1797,18 @@
 
 /* CKEditor-safety: neutralize wrapper <p> and stray nbsp spacing */
 #mecknc-cjs-map .topbar p, #mecknc-cjs-map .map-top-controls p { margin: 0; }
-#mecknc-cjs-map .brand-title { white-space: nowrap; }
+
+/* Title vs Reset: never overlap */
+#mecknc-cjs-map .topbar-map-section > .position-absolute { max-width: calc(100% - 200px); min-width: 0; }
+#mecknc-cjs-map .brand-title { min-width: 0; line-height: 1.2; }
+#mecknc-cjs-map .btn-map-reset { flex-shrink: 0; white-space: nowrap; position: relative; z-index: 1; }
+@container mcjs (max-width: 900px) {
+  #mecknc-cjs-map .topbar-map-section { gap: 10px; }
+  #mecknc-cjs-map .topbar-map-section > div:first-child:empty,
+  #mecknc-cjs-map .topbar-map-section > div:first-child:not([class]) { display: none; }
+  #mecknc-cjs-map .topbar-map-section > .position-absolute {
+    position: static !important; transform: none !important; left: auto !important;
+    max-width: none; flex: 1 1 auto;
+  }
+  #mecknc-cjs-map .brand-title { white-space: normal; overflow-wrap: anywhere; font-size: 14px; }
+}
