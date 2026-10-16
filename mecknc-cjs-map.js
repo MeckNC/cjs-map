@@ -10866,7 +10866,9 @@ function setDashboardYearText() {
         }
       }
 
-      statusEl.innerHTML = `Location <b>${q}</b> not found in Mecklenburg County.`;
+      statusEl.textContent = "";
+      const qb = document.createElement("b"); qb.textContent = q;
+      statusEl.append("Location ", qb, " not found in Mecklenburg County.");
     }
 
     function buildSilhouette() {
