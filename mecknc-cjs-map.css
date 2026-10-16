@@ -1812,3 +1812,15 @@
   }
   #mecknc-cjs-map .brand-title { white-space: normal; overflow-wrap: anywhere; font-size: 14px; }
 }
+
+/* ---- mobile: let the box grow so all panels are reachable (no fixed height / inner scroll trap) ---- */
+@media (max-width: 800px){
+  #mecknc-cjs-map{height:auto;min-height:0;overflow:visible;contain:none;}
+  #mecknc-cjs-map .mcjs-cq{height:auto;}
+}
+@container mcjs (max-width: 768px){
+  #mecknc-cjs-map .app{height:auto;max-height:none;overflow:visible;}
+  #mecknc-cjs-map .main{height:auto;overflow:visible;}
+  #mecknc-cjs-map .map-wrap{height:min(420px,70svh);min-height:300px;flex:none;}
+  #mecknc-cjs-map .sidebar{height:auto;overflow:visible;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px));}
+}
