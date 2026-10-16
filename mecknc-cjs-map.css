@@ -28,6 +28,7 @@
   --mc-ramp-3: var(--mc-logo-blue);
   --mc-select: var(--mc-purple);
   --mc-compare: var(--mc-red-adj);
+  --mc-btn: var(--mc-red-adj);               /* filled action buttons */
   --base: var(--mc-purple);
   --border: var(--mc-border);
   --text: var(--mc-text);
@@ -1852,3 +1853,13 @@
 #mecknc-cjs-map .zip-list-item.is-active-b{background:var(--mc-bg-gray);border-color:var(--mc-red-adj);box-shadow:inset 4px 0 0 var(--mc-red-adj);}
 #mecknc-cjs-map .zip-list-item:hover{border-color:var(--mc-cool-gray);}
 #mecknc-cjs-map #mcjs-zipList, #mecknc-cjs-map .zip-list{position:relative;overscroll-behavior:contain;}
+
+/* ---- filled action buttons: brand Poppy Red Adjusted ---- */
+#mecknc-cjs-map .btn-map-reset, #mecknc-cjs-map .btn-map-compare{background-color:var(--mc-btn);border:2px solid var(--mc-btn);color:#fff;padding:3px 9px;}
+#mecknc-cjs-map .btn-map-reset:hover, #mecknc-cjs-map .btn-map-compare:hover,
+#mecknc-cjs-map .btn-map-reset:focus-visible, #mecknc-cjs-map .btn-map-compare:focus-visible,
+#mecknc-cjs-map .btn-map-reset:active, #mecknc-cjs-map .btn-map-compare:active,
+#mecknc-cjs-map .btn-map-compare.active{background-color:#fff;border-color:var(--mc-btn);color:var(--mc-btn);}
+#mecknc-cjs-map .btn-map-reset:focus-visible, #mecknc-cjs-map .btn-map-compare:focus-visible{outline:2px solid var(--mc-btn) !important;outline-offset:2px !important;}
+#mecknc-cjs-map .btn-map-reset svg, #mecknc-cjs-map .btn-map-compare svg{color:inherit;stroke:currentColor;}
+#mecknc-cjs-map .btn-map-reset svg [fill]:not([fill="none"]), #mecknc-cjs-map .btn-map-compare svg [fill]:not([fill="none"]){fill:currentColor;}
