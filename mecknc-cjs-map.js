@@ -5,7 +5,6 @@
   var NS = window.MeckNCcjsMap = window.MeckNCcjsMap || { instances: [] };
   var ARCGIS_JS = "https://js.arcgis.com/4.31/";
   var ARCGIS_CSS = "https://js.arcgis.com/4.31/esri/themes/light/main.css";
-  var ICONS_CSS = "https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css";
   var IDP = "mcjs-";
 
   function addCssOnce(href) {
@@ -9683,7 +9682,7 @@ function setDashboardYearText() {
           if (lt) { lt.setAttribute("role", "heading"); lt.setAttribute("aria-level", "3"); }
           if (!root.querySelector("#mcjs-announcer")) {
             const a = window.document.createElement("div");
-            a.id = "mcjs-announcer"; a.className = "visually-hidden";
+            a.id = "mcjs-announcer"; a.className = "usa-sr-only";
             a.setAttribute("role", "status"); a.setAttribute("aria-live", "polite"); a.setAttribute("aria-atomic", "true");
             root.appendChild(a);
           }
@@ -10227,7 +10226,7 @@ function setDashboardYearText() {
         </div>`;
       }
 
-      html += `<div class="legend-row mt-1" style="border-top: 1px solid rgba(0,0,0,0.08); padding-top: 5px;">
+      html += `<div class="legend-row margin-top-05" style="border-top: 1px solid rgba(0,0,0,0.08); padding-top: 5px;">
         <span class="swatch" style="background:#a1a1a4; border: 1px solid #5d594d;"></span>
         <span style="color:#5d594d; font-size:11.5px;">Excluded Area</span>
       </div>`;
@@ -10276,8 +10275,7 @@ function setDashboardYearText() {
                   ? diff <= 0
                   : true;
             deltaEl.className = "delta" + (isGood ? "" : " negative");
-            const iconClass = isUp ? "bi-caret-up-fill" : "bi-caret-down-fill";
-            deltaEl.innerHTML = `<i class="bi ${iconClass}"></i>`;
+            deltaEl.innerHTML = `<svg class="mcjs-caret" aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="10" height="10" fill="currentColor"><path d="${isUp ? "M8 3l6 9H2z" : "M8 13L2 4h12z"}"/></svg>`;
           }
         }
       }
@@ -10308,7 +10306,7 @@ function setDashboardYearText() {
         const isPinned = targetZip === pinnedZip;
         if (cardsHeading) {
           cardsHeading.innerHTML = isPinned
-            ? `ZIP ${targetZip} <span class="badge bg-secondary ms-1" style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;vertical-align:1px;">PINNED</span>`
+            ? `ZIP ${targetZip} <span class="badge bg-base-dark margin-left-05" style="font-size:10px;font-weight:600;padding:2px 6px;border-radius:4px;vertical-align:1px;">PINNED</span>`
             : `ZIP ${targetZip}`;
         }
 
@@ -10358,7 +10356,7 @@ function setDashboardYearText() {
 
       if (DEMO_PCT_METRICS.length > 0) {
         let totalPct = 0;
-        let barHtml = `<div class="demo-bar mt-2">`;
+        let barHtml = `<div class="demo-bar margin-top-1">`;
         let legendHtml = `<div class="demo-legend">`;
         for (const m of DEMO_PCT_METRICS) {
           const val = cached
@@ -10395,7 +10393,7 @@ function setDashboardYearText() {
         if (EXCLUDED_ZIPS.has(targetZip)) {
           if (demographicsTitle)
             demographicsTitle.textContent = `Demographics · ZIP ${targetZip}`;
-          demographicsBody.innerHTML = `<div class="acs-empty text-muted small">Demographic data is unavailable for this excluded ZIP code area.</div>`;
+          demographicsBody.innerHTML = `<div class="acs-empty text-base font-body-2xs">Demographic data is unavailable for this excluded ZIP code area.</div>`;
           return;
         }
 
@@ -10411,7 +10409,7 @@ function setDashboardYearText() {
         }
       } else {
         if (demographicsTitle) demographicsTitle.textContent = "Demographics";
-        demographicsBody.innerHTML = `<div class="acs-empty text-muted small">Hover over or click a ZIP code on the map to see its demographic breakdown.</div>`;
+        demographicsBody.innerHTML = `<div class="acs-empty text-base font-body-2xs">Hover over or click a ZIP code on the map to see its demographic breakdown.</div>`;
       }
     }
 
@@ -10623,11 +10621,11 @@ function setDashboardYearText() {
 
     function refreshAcs() {
       if (isCompareMode) {
-        if (_cardsHeading) _cardsHeading.classList.add("d-none");
+        if (_cardsHeading) _cardsHeading.classList.add("display-none");
         if (_metricCardsContainer)
-          _metricCardsContainer.classList.add("d-none");
-        if (_demographicsCard) _demographicsCard.classList.add("d-none");
-        if (_compareCard) _compareCard.classList.remove("d-none");
+          _metricCardsContainer.classList.add("display-none");
+        if (_demographicsCard) _demographicsCard.classList.add("display-none");
+        if (_compareCard) _compareCard.classList.remove("display-none");
 
         const key = `cmp:${pinnedZip || "none"}:${pinnedZipB || "none"}`;
         if (currentAcsKey !== key) {
@@ -10635,11 +10633,11 @@ function setDashboardYearText() {
           renderZipAcsCompare(pinnedZip, pinnedZipB);
         }
       } else {
-        if (_compareCard) _compareCard.classList.add("d-none");
-        if (_cardsHeading) _cardsHeading.classList.remove("d-none");
+        if (_compareCard) _compareCard.classList.add("display-none");
+        if (_cardsHeading) _cardsHeading.classList.remove("display-none");
         if (_metricCardsContainer)
-          _metricCardsContainer.classList.remove("d-none");
-        if (_demographicsCard) _demographicsCard.classList.remove("d-none");
+          _metricCardsContainer.classList.remove("display-none");
+        if (_demographicsCard) _demographicsCard.classList.remove("display-none");
 
         const target = pinnedZip || hoverZip || null;
         const key = `single:${target}:${pinnedZip ? "pin" : "hover"}`;
@@ -10664,10 +10662,10 @@ function setDashboardYearText() {
 
       const infoGridContainer = document.getElementById("infoGridContainer");
       const excludedLabel = document.getElementById("excludedLabel");
-      if (infoGridContainer) infoGridContainer.classList.remove("d-none");
-      if (excludedLabel) excludedLabel.classList.add("d-none");
+      if (infoGridContainer) infoGridContainer.classList.remove("display-none");
+      if (excludedLabel) excludedLabel.classList.add("display-none");
 
-      if (infoPanel) infoPanel.classList.add("d-none");
+      if (infoPanel) infoPanel.classList.add("display-none");
     }
 
     function positionPanelAtCursor(x, y) {
@@ -10718,9 +10716,9 @@ function setDashboardYearText() {
       const excludedLabel = document.getElementById("excludedLabel");
 
       if (EXCLUDED_ZIPS.has(z)) {
-        if (infoGridContainer) infoGridContainer.classList.add("d-none");
+        if (infoGridContainer) infoGridContainer.classList.add("display-none");
         if (excludedLabel) {
-          excludedLabel.classList.remove("d-none");
+          excludedLabel.classList.remove("display-none");
           if (z === "28223") {
             excludedLabel.innerHTML = `<span class="badge" style="color: #0f0e0eb3; font-size: 11px; font-weight: 550; padding: 4px 8px; border-radius: 6px; white-space: normal; display: inline-block; text-align: left;">This ZIP code represents UNC Charlotte’s campus. Data is not available for all community well-being indicators and is not displayed here.</span>`;
           } else {
@@ -10728,8 +10726,8 @@ function setDashboardYearText() {
           }
         }
       } else {
-        if (infoGridContainer) infoGridContainer.classList.remove("d-none");
-        if (excludedLabel) excludedLabel.classList.add("d-none");
+        if (infoGridContainer) infoGridContainer.classList.remove("display-none");
+        if (excludedLabel) excludedLabel.classList.add("display-none");
 
         const p = f.properties || {};
 
@@ -10756,7 +10754,7 @@ function setDashboardYearText() {
           infoHighSchool.textContent = fmt(highSchool, "percent");
       }
 
-      if (infoPanel) infoPanel.classList.remove("d-none");
+      if (infoPanel) infoPanel.classList.remove("display-none");
     }
 
     function setPins(a, b) {
@@ -10858,7 +10856,7 @@ function setDashboardYearText() {
     function hideSuggestions() {
       if (searchInput) searchInput.setAttribute("aria-expanded", "false");
       if (searchSuggestions) {
-        searchSuggestions.classList.add("d-none");
+        searchSuggestions.classList.add("display-none");
         searchSuggestions.innerHTML = "";
       }
       activeSuggestionIdx = -1;
@@ -10895,7 +10893,7 @@ function setDashboardYearText() {
         })
         .join("");
 
-      searchSuggestions.classList.remove("d-none");
+      searchSuggestions.classList.remove("display-none");
       if (searchInput) searchInput.setAttribute("aria-expanded", "true");
       searchSuggestions.querySelectorAll(".suggestion-item").forEach((it, i) => { it.setAttribute("role", "option"); if (!it.id) it.id = "mcjs-sugg-" + i; });
 
@@ -11508,7 +11506,7 @@ setTimeout(() => {
       hideSuggestions();
       clearSearchMarker();
       if (statusEl) statusEl.innerHTML = "";
-      if (infoPanel) infoPanel.classList.add("d-none");
+      if (infoPanel) infoPanel.classList.add("display-none");
       currentAcsKey = "";
       refreshAcs();
     }
@@ -11521,7 +11519,7 @@ setTimeout(() => {
       resetBtn.addEventListener("click", resetView);
     }
     const infoCard = document.createElement("div");
-    infoCard.className = "info-tooltip-card shadow-sm";
+    infoCard.className = "info-tooltip-card shadow-1";
     document.body.appendChild(infoCard);
 
     document.addEventListener("mouseover", (e) => {
@@ -11639,7 +11637,7 @@ document.addEventListener("keydown", (e) => {
   clearTimeout(__mcjsTipTimer);
   infoCard.style.display = "none";
   const ip = document.getElementById("infoPanel");
-  if (ip) ip.classList.add("d-none");
+  if (ip) ip.classList.add("display-none");
   try { hideSuggestions(); } catch (err) {}
 });
 
@@ -11687,7 +11685,7 @@ document.addEventListener("focusout", (e) => {
       console.warn("[MeckNC CJS map] Only one copy of this map is supported per page; extra copy skipped.");
       return;
     }
-    addCssOnce(ARCGIS_CSS); addCssOnce(ICONS_CSS);
+    addCssOnce(ARCGIS_CSS);
     loadArcgis().then(function (req) {
       if (!root.isConnected) return;
       try { start(root, req); } catch (e) { console.error("[MeckNC CJS map]", e); }
