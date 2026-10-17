@@ -10493,7 +10493,7 @@ function setDashboardYearText() {
         <div class="cmp-container">
           <div class="cmp-top-bar">
             <span class="cmp-top-title">COMPARE TWO ZIP CODES</span>
-            <button id="mcjs-exitCompareBtn" class="cmp-exit-btn" type="button" title="Close comparison" aria-label="Close comparison">
+            <button id="mcjs-exitCompareBtn" class="cmp-exit-btn" type="button" title="Exit comparison" aria-label="Exit comparison">
               <span class="cmp-exit-x" aria-hidden="true">✕</span> Exit
             </button>
           </div>
@@ -11433,6 +11433,20 @@ function showInfoTooltip(icon) {
         }
 
         await view.when();
+        // Esri strips role/aria-label from the map container; re-apply and keep them (WCAG 4.1.2)
+        try {
+          const mapEl = document.getElementById("map");
+          const MAP_LABEL = "Interactive map of Mecklenburg County ZIP codes. Use the ZIP list in the sidebar to select areas.";
+          const fixMapRole = () => {
+            if (mapEl.getAttribute("role") !== "region") mapEl.setAttribute("role", "region");
+            if (!mapEl.getAttribute("aria-label")) mapEl.setAttribute("aria-label", MAP_LABEL);
+          };
+          fixMapRole();
+          if (!mapEl.__mcjsRoleObs && window.MutationObserver) {
+            mapEl.__mcjsRoleObs = new MutationObserver(fixMapRole);
+            mapEl.__mcjsRoleObs.observe(mapEl, { attributes: true, attributeFilter: ["role", "aria-label"] });
+          }
+        } catch (e) {}
         view.ui.move("zoom", "top-left");
 
         buildCaches();

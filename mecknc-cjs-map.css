@@ -1959,3 +1959,4 @@
 #mecknc-cjs-map #mcjs-compareBtn *, #mecknc-cjs-map #mcjs-resetBtn *{color:inherit !important;text-decoration:none !important;}
 #mecknc-cjs-map #mcjs-compareBtn svg, #mecknc-cjs-map #mcjs-resetBtn svg{stroke:currentColor !important;}
 #mecknc-cjs-map #mcjs-compareBtn svg [fill]:not([fill="none"]), #mecknc-cjs-map #mcjs-resetBtn svg [fill]:not([fill="none"]){fill:currentColor !important;}
+#mecknc-cjs-map .info-title{white-space:normal !important;overflow:visible !important;text-overflow:clip !important;overflow-wrap:anywhere;}
