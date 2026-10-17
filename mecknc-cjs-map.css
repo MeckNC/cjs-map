@@ -1934,3 +1934,14 @@
 /* light ZIP colors (e.g. #53b7d9): dark header text for contrast */
 #mecknc-cjs-map .info-header.mcjs-header-light, #mecknc-cjs-map .info-header.mcjs-header-light .info-title{color:#1a1a1a!important;}
 #mecknc-cjs-map .info-header.mcjs-header-light .info-header-tag{background:rgba(255,255,255,.7);color:#1a1a1a;}
+
+/* ---- Compare "on" vs hover: on = white with red text + "Exit compare" label; hovering
+   an "on" button inverts to red so hover never looks the same as the current state ---- */
+#mecknc-cjs-map .btn-map-compare.active{background-color:#fff;color:var(--mc-btn);border-color:var(--mc-btn);box-shadow:inset 0 0 0 1px var(--mc-btn);}
+#mecknc-cjs-map .btn-map-compare.active:hover{background-color:var(--mc-btn);color:#fff;border-color:var(--mc-btn);box-shadow:none;}
+#mecknc-cjs-map .btn-map-compare.active:focus-visible{background-color:#fff;color:var(--mc-btn);}
+/* compare slot clear (✕) buttons: readable color and 24px target */
+#mecknc-cjs-map .cmp-slot-clear{color:var(--mc-text-adj);min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center;padding:0 4px;}
+#mecknc-cjs-map .cmp-slot-clear:hover{color:var(--mc-btn);}
+#mecknc-cjs-map .cmp-exit-btn{min-height:24px;}
+#mecknc-cjs-map .cmp-slot-badge.orange{color:#a8272b;border-color:#f5c2c2;}

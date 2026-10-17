@@ -10493,8 +10493,8 @@ function setDashboardYearText() {
         <div class="cmp-container">
           <div class="cmp-top-bar">
             <span class="cmp-top-title">COMPARE TWO ZIP CODES</span>
-            <button id="mcjs-exitCompareBtn" class="cmp-exit-btn" type="button" title="Exit Compare Mode">
-              <span class="cmp-exit-x">✕</span> Exit
+            <button id="mcjs-exitCompareBtn" class="cmp-exit-btn" type="button" title="Exit Compare Mode" aria-label="Exit compare">
+              <span class="cmp-exit-x" aria-hidden="true">✕</span> Exit
             </button>
           </div>
 
@@ -10506,13 +10506,13 @@ function setDashboardYearText() {
                 <div class="cmp-slot-header">
                   ${pinSvg("blue")}
                   <span class="cmp-slot-badge blue">ZIP #1</span>
-                  <button class="cmp-slot-clear" id="mcjs-clearSlot1" title="Clear ZIP #1">✕</button>
+                  <button type="button" class="cmp-slot-clear" id="mcjs-clearSlot1" title="Clear ZIP #1" aria-label="Clear ZIP #1 (${zipA})"><span aria-hidden="true">✕</span></button>
                 </div>
                 <div class="cmp-slot-val blue">ZIP ${zipA}</div>
               `
                   : `
                 ${pinSvg("blue")}
-                <span class="cmp-slot-prompt">Click a map ZIP or search to pick ZIP #1</span>
+                <span class="cmp-slot-prompt">Click a ZIP on the map or in the ZIP list to pick ZIP #1</span>
               `
               }
             </div>
@@ -10524,13 +10524,13 @@ function setDashboardYearText() {
                 <div class="cmp-slot-header">
                   ${pinSvg("orange")}
                   <span class="cmp-slot-badge orange">ZIP #2</span>
-                  <button class="cmp-slot-clear" id="mcjs-clearSlot2" title="Clear ZIP #2">✕</button>
+                  <button type="button" class="cmp-slot-clear" id="mcjs-clearSlot2" title="Clear ZIP #2" aria-label="Clear ZIP #2 (${zipB})"><span aria-hidden="true">✕</span></button>
                 </div>
                 <div class="cmp-slot-val orange">ZIP ${zipB}</div>
               `
                   : `
                 ${pinSvg("orange")}
-                <span class="cmp-slot-prompt">Click a map ZIP or search to pick ZIP #2</span>
+                <span class="cmp-slot-prompt">Click a ZIP on the map or in the ZIP list to pick ZIP #2</span>
               `
               }
             </div>
@@ -10791,12 +10791,14 @@ function setDashboardYearText() {
       if (!compareBtn) return;
       if (isCompareMode) {
         compareBtn.classList.add("active");
-        compareBtn.innerHTML = `<svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg> Compare`;
+        compareBtn.innerHTML = `<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3 3l10 10M13 3L3 13"/></svg> Exit compare`;
         compareBtn.setAttribute("title", "Exit Compare mode");
+        compareBtn.setAttribute("aria-label", "Exit compare");
       } else {
         compareBtn.classList.remove("active");
-        compareBtn.innerHTML = `<svg viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="5" height="10" rx="1" /><rect x="9" y="3" width="5" height="10" rx="1" /></svg> Compare`;
+        compareBtn.innerHTML = `<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="5" height="10" rx="1" /><rect x="9" y="3" width="5" height="10" rx="1" /></svg> Compare`;
         compareBtn.setAttribute("title", "Toggle 2-ZIP Compare mode");
+        compareBtn.setAttribute("aria-label", "Compare two ZIP areas");
       }
     }
 
@@ -10804,7 +10806,10 @@ function setDashboardYearText() {
       isCompareMode = !isCompareMode;
       currentAcsKey = "";
       updateCompareBtnUI();
-      setPins(null, null);
+      // keep the current ZIP as ZIP #1 when entering; keep ZIP #1 (drop #2) when leaving
+      setPins(pinnedZip || null, null);
+      try { mcjsAnnounce(isCompareMode ? (pinnedZip ? `Compare mode on. ZIP ${pinnedZip} is ZIP 1; pick a second ZIP.` : "Compare mode on. Pick two ZIP areas.") : "Compare mode off."); } catch (e) {}
+      try { const ip = document.getElementById("infoPanel"); if (ip) { ip.classList.add("display-none"); ip.__anchored = false; } } catch (e) {}
     }
 
     function togglePin(z) {
@@ -10821,7 +10826,7 @@ function setDashboardYearText() {
         } else {
           if (z === pinnedZipB) setPins(pinnedZip, null);
           else if (z === pinnedZip) setPins(pinnedZipB, null);
-          else setPins(pinnedZipB, z);
+          else setPins(pinnedZip, z); // replace ZIP #2, keep ZIP #1
         }
       }
     }
@@ -11102,6 +11107,12 @@ function buildZipList() {
     btn.addEventListener("click", () => {
       focusZipByIndex(idx);
       togglePin(zip);
+      // same rule as map clicks: if this ZIP was unpinned, close its details box
+      try {
+        const ip = document.getElementById("infoPanel");
+        if (ip && zip !== pinnedZip && zip !== pinnedZipB && ip.__zip !== pinnedZip && ip.__zip !== pinnedZipB) { ip.classList.add("display-none"); ip.__anchored = false; }
+        if (ip) ip.__closedByUser = false;
+      } catch (e) {}
     });
 
     btn.addEventListener("focus", () => {
@@ -11231,6 +11242,7 @@ function showInfoTooltip(icon) {
   }
 
   infoCard.innerHTML = tooltipHtml;
+  if (infoCard.__ensureX) infoCard.__ensureX();
   infoCard.style.display = "block";
   infoCard.style.height = "auto";
   infoCard.style.minHeight = "auto";
@@ -11308,7 +11320,8 @@ function showInfoTooltip(icon) {
       evt.stopPropagation();
       const z = zipAtEvent(evt);
       if (infoPanel) infoPanel.__suppress = null;
-      if (z && infoPanel && infoPanel.classList.contains("display-none") && (z === pinnedZip || z === pinnedZipB)) {
+      if (z && infoPanel && infoPanel.__closedByUser && (z === pinnedZip || z === pinnedZipB)) {
+        infoPanel.__closedByUser = false;
         // box was closed with X: a click/tap on the selected ZIP reopens it instead of unpinning
         showPanel(featureByZip.get(z));
         positionPanelAtCursor(evt.x, evt.y);
@@ -11317,15 +11330,16 @@ function showInfoTooltip(icon) {
       }
       if (z) {
         togglePin(z);
-        if (infoPanel) infoPanel.__anchored = false;
-        const pz = pinnedZipB || pinnedZip;
-        if (pz && featureByZip.get(pz)) {
-          showPanel(featureByZip.get(pz));
-          positionPanelAtCursor(evt.x, evt.y);
-          if (infoPanel) infoPanel.__anchored = true;
-        } else if (featureByZip.get(z)) {
+        if (infoPanel) { infoPanel.__anchored = false; infoPanel.__closedByUser = false; }
+        const stillPinned = z === pinnedZip || z === pinnedZipB;
+        if (stillPinned && featureByZip.get(z)) {
+          // show the ZIP that was clicked (not whichever slot changed) and keep it in place
           showPanel(featureByZip.get(z));
           positionPanelAtCursor(evt.x, evt.y);
+          if (infoPanel) infoPanel.__anchored = true;
+        } else if (infoPanel) {
+          // clicked ZIP was unpinned: close its details box
+          infoPanel.classList.add("display-none");
         }
       } else if (!isCompareMode) {
         clearPinned();
@@ -11574,7 +11588,7 @@ setTimeout(() => {
       const b = window.document.createElement("button");
       b.type = "button"; b.className = "mcjs-close";
       b.setAttribute("aria-label", label); b.setAttribute("title", label);
-      b.innerHTML = MCJS_X;
+      b.innerHTML = MCJS_X + '<span class="usa-sr-only">' + label + "</span>"; // name survives even if aria-label is stripped
       b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); onClose(); });
       return b;
     }
@@ -11587,6 +11601,7 @@ setTimeout(() => {
         hdr.appendChild(mcjsCloseBtn("Close ZIP details", () => {
           infoPanel.__suppress = infoPanel.__zip || hoverZip || null;
           infoPanel.__anchored = false;
+          infoPanel.__closedByUser = true;
           infoPanel.classList.add("display-none");
           // keyboard users: park focus on the map region (focusing a list item would reopen the box)
           const mapEl = document.getElementById("map");
@@ -11601,9 +11616,13 @@ setTimeout(() => {
       infoCard.style.display = "none";
       if (icon && icon.focus) icon.focus({ preventScroll: true });
     }
-    new MutationObserver(() => {
-      if (!infoCard.querySelector(".mcjs-close")) infoCard.insertBefore(mcjsCloseBtn("Close information", mcjsCloseTip), infoCard.firstChild);
-    }).observe(infoCard, { childList: true });
+    function mcjsEnsureTipX() {
+      if (!infoCard.querySelector(":scope > .mcjs-close")) infoCard.insertBefore(mcjsCloseBtn("Close information", mcjsCloseTip), infoCard.firstChild);
+    }
+    infoCard.__ensureX = mcjsEnsureTipX;
+    infoCard.setAttribute("role", "group");
+    infoCard.setAttribute("aria-label", "Information");
+    new MutationObserver(mcjsEnsureTipX).observe(infoCard, { childList: true });
     // Capture phase runs before the tooltip handlers: remember the icon, and keep a closed
     // pop-up from reopening until the pointer/focus leaves that icon.
     const mcjsTipGate = (e) => {
@@ -11679,6 +11698,7 @@ setTimeout(() => {
             }
           }
           infoCard.innerHTML = tooltipHtml;
+          if (infoCard.__ensureX) infoCard.__ensureX();
           infoCard.style.display = "block";
           infoCard.style.height = "auto";
           infoCard.style.minHeight = "auto";
@@ -11771,7 +11791,7 @@ window.document.addEventListener("keydown", (e) => {
   clearTimeout(__mcjsTipTimer);
   infoCard.style.display = "none";
   const ip = document.getElementById("infoPanel");
-  if (ip) { if (!ip.classList.contains("display-none")) ip.__suppress = ip.__zip || null; ip.classList.add("display-none"); }
+  if (ip) { if (!ip.classList.contains("display-none")) { ip.__suppress = ip.__zip || null; ip.__closedByUser = true; } ip.classList.add("display-none"); ip.__anchored = false; }
   try { hideSuggestions(); } catch (err) {}
 });
 
