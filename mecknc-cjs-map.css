@@ -1945,3 +1945,17 @@
 #mecknc-cjs-map .cmp-slot-clear:hover{color:var(--mc-btn);}
 #mecknc-cjs-map .cmp-exit-btn{min-height:24px;}
 #mecknc-cjs-map .cmp-slot-badge.orange{color:#a8272b;border-color:#f5c2c2;}
+
+/* ---- Reset/Compare text colour lock: live theme rules (usa-button, link/visited, span colours)
+   were turning the label purple. ID-level + !important, and children follow the button ---- */
+#mecknc-cjs-map #mcjs-compareBtn, #mecknc-cjs-map #mcjs-resetBtn,
+#mecknc-cjs-map #mcjs-compareBtn:link, #mecknc-cjs-map #mcjs-resetBtn:link,
+#mecknc-cjs-map #mcjs-compareBtn:visited, #mecknc-cjs-map #mcjs-resetBtn:visited{background-color:#d93838 !important;color:#fff !important;border:2px solid #d93838 !important;box-shadow:none !important;text-decoration:none !important;}
+#mecknc-cjs-map #mcjs-compareBtn:hover, #mecknc-cjs-map #mcjs-resetBtn:hover,
+#mecknc-cjs-map #mcjs-compareBtn:focus-visible, #mecknc-cjs-map #mcjs-resetBtn:focus-visible,
+#mecknc-cjs-map #mcjs-compareBtn:active, #mecknc-cjs-map #mcjs-resetBtn:active{background-color:#fff !important;color:#d93838 !important;border-color:#d93838 !important;}
+#mecknc-cjs-map #mcjs-compareBtn.active{background-color:#fff !important;color:#d93838 !important;border-color:#d93838 !important;box-shadow:inset 0 0 0 1px #d93838 !important;}
+#mecknc-cjs-map #mcjs-compareBtn.active:hover{background-color:#d93838 !important;color:#fff !important;box-shadow:none !important;}
+#mecknc-cjs-map #mcjs-compareBtn *, #mecknc-cjs-map #mcjs-resetBtn *{color:inherit !important;text-decoration:none !important;}
+#mecknc-cjs-map #mcjs-compareBtn svg, #mecknc-cjs-map #mcjs-resetBtn svg{stroke:currentColor !important;}
+#mecknc-cjs-map #mcjs-compareBtn svg [fill]:not([fill="none"]), #mecknc-cjs-map #mcjs-resetBtn svg [fill]:not([fill="none"]){fill:currentColor !important;}

@@ -10493,7 +10493,7 @@ function setDashboardYearText() {
         <div class="cmp-container">
           <div class="cmp-top-bar">
             <span class="cmp-top-title">COMPARE TWO ZIP CODES</span>
-            <button id="mcjs-exitCompareBtn" class="cmp-exit-btn" type="button" title="Exit Compare Mode" aria-label="Exit compare">
+            <button id="mcjs-exitCompareBtn" class="cmp-exit-btn" type="button" title="Close comparison" aria-label="Close comparison">
               <span class="cmp-exit-x" aria-hidden="true">✕</span> Exit
             </button>
           </div>
@@ -10594,24 +10594,18 @@ function setDashboardYearText() {
       }
 
       if (zipAcsBody) {
-        zipAcsBody.innerHTML = html;
-
-        const exitBtn = zipAcsBody.querySelector("#mcjs-exitCompareBtn");
-        if (exitBtn) exitBtn.addEventListener("click", toggleCompareMode);
-
-        const clear1 = zipAcsBody.querySelector("#mcjs-clearSlot1");
-        if (clear1) {
-          clear1.addEventListener("click", (e) => {
-            e.stopPropagation();
-            setPins(pinnedZipB || null, null);
-          });
-        }
-
-        const clear2 = zipAcsBody.querySelector("#mcjs-clearSlot2");
-        if (clear2) {
-          clear2.addEventListener("click", (e) => {
-            e.stopPropagation();
-            setPins(pinnedZip, null);
+        // don't rebuild identical markup: replacing the panel between mousedown and mouseup
+        // (e.g. a focusout refresh when focus moves from the ZIP list to ✕ Exit) swallowed the click
+        if (zipAcsBody.__mcjsHtml !== html) { zipAcsBody.innerHTML = html; zipAcsBody.__mcjsHtml = html; }
+        if (!zipAcsBody.__mcjsDelegated) {
+          zipAcsBody.__mcjsDelegated = true;
+          zipAcsBody.addEventListener("click", (e) => {
+            const t = e.target && e.target.closest ? e.target.closest("#mcjs-exitCompareBtn, #mcjs-clearSlot1, #mcjs-clearSlot2") : null;
+            if (!t) return;
+            e.preventDefault(); e.stopPropagation();
+            if (t.id === "mcjs-exitCompareBtn") exitCompare();
+            else if (t.id === "mcjs-clearSlot1") setPins(pinnedZipB || null, null);
+            else setPins(pinnedZip, null);
           });
         }
       }
@@ -10802,6 +10796,7 @@ function setDashboardYearText() {
       }
     }
 
+    function exitCompare() { if (isCompareMode) toggleCompareMode(); try { const c = document.getElementById("compareBtn"); if (c && c.focus) c.focus({ preventScroll: true }); } catch (e) {} }
     function toggleCompareMode() {
       isCompareMode = !isCompareMode;
       currentAcsKey = "";
