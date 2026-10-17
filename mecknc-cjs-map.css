@@ -1919,3 +1919,18 @@
 #mecknc-cjs-map .demo-label{white-space:normal;overflow:visible;text-overflow:clip;overflow-wrap:anywhere;}
 /* tooltip card must be hoverable (1.4.13) */
 #mecknc-cjs-map .info-tooltip-card{pointer-events:auto;}
+
+/* ---- Search switched off (also hides it if CKEditor drops the HTML comment) ---- */
+#mecknc-cjs-map #mcjs-searchForm, #mecknc-cjs-map .search-wrap, #mecknc-cjs-map .search-suggestions{display:none!important}
+
+/* ---- Close (X) buttons on pop-ups: brand red, 28x28 target ---- */
+#mecknc-cjs-map .mcjs-close{flex:none;display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;min-width:28px;padding:0;margin:0;border:2px solid #fff;border-radius:6px;background:var(--mc-btn,#d93838);color:#fff;cursor:pointer;line-height:1;box-shadow:none;}
+#mecknc-cjs-map .mcjs-close:hover, #mecknc-cjs-map .mcjs-close:focus-visible{background:#fff;color:var(--mc-btn,#d93838);border-color:var(--mc-btn,#d93838);}
+#mecknc-cjs-map .mcjs-close:focus-visible{outline:2px solid #fff!important;outline-offset:0!important;box-shadow:0 0 0 4px var(--mc-btn,#d93838);}
+#mecknc-cjs-map .mcjs-close svg{pointer-events:none;stroke:currentColor;}
+#mecknc-cjs-map .info-tooltip-card{padding-right:40px!important;}
+#mecknc-cjs-map .info-tooltip-card > .mcjs-close{position:absolute;top:6px;right:6px;border-color:var(--mc-btn,#d93838);}
+#mecknc-cjs-map .info-panel .mcjs-close{pointer-events:auto;position:relative;z-index:2;}
+/* light ZIP colors (e.g. #53b7d9): dark header text for contrast */
+#mecknc-cjs-map .info-header.mcjs-header-light, #mecknc-cjs-map .info-header.mcjs-header-light .info-title{color:#1a1a1a!important;}
+#mecknc-cjs-map .info-header.mcjs-header-light .info-header-tag{background:rgba(255,255,255,.7);color:#1a1a1a;}

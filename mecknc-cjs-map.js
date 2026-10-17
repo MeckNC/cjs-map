@@ -70,6 +70,14 @@
     var document = scopedDocument(root);
     // Repair markup CKEditor 5 mangles: it empties <button>s, leaving the icon/label as loose siblings
     // (often wrapped in <p>). Remove the strays and rebuild the button contents.
+    // Search is switched off (markup is commented out in the block; this also covers CKEditor
+    // dropping the comment). Removing the form makes every search lookup fall back to hidden stubs.
+    var SEARCH_ENABLED = false;
+    if (!SEARCH_ENABLED) {
+      var __sf = root.querySelector('#' + IDP + 'searchForm');
+      if (__sf) __sf.remove();
+      root.classList.add('mcjs-no-search');
+    }
     (function repairButtons() {
       var defs = {
         resetBtn: '<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 2.5v4h4"/><path d="M2.7 6.2a6 6 0 1 1 1.2 5.8"/></svg> Reset',
@@ -10665,7 +10673,7 @@ function setDashboardYearText() {
       if (infoGridContainer) infoGridContainer.classList.remove("display-none");
       if (excludedLabel) excludedLabel.classList.add("display-none");
 
-      if (infoPanel) infoPanel.classList.add("display-none");
+      if (infoPanel) { infoPanel.classList.add("display-none"); infoPanel.__anchored = false; }
     }
 
     function positionPanelAtCursor(x, y) {
@@ -10702,6 +10710,11 @@ function setDashboardYearText() {
     function showPanel(f) {
       if (!f) return;
       const z = getZip(f.properties || {});
+      if (infoPanel) {
+        if (infoPanel.__suppress && infoPanel.__suppress === z) return; // closed with X: wait for a new hover/click
+        infoPanel.__suppress = null;
+        infoPanel.__zip = z;
+      }
       const city = getCityForZip(z);
 
       if (infoTitle)
@@ -10709,7 +10722,16 @@ function setDashboardYearText() {
 
       const infoHeader = document.querySelector(".info-header");
       if (infoHeader) {
-        infoHeader.style.background = getZipColor(z);
+        const bg = getZipColor(z);
+        infoHeader.style.background = bg;
+        // keep header text >= 4.5:1 on light ZIP colors
+        let light = false;
+        const m = /^#?([0-9a-f]{6})$/i.exec(String(bg || "").trim());
+        if (m) {
+          const c = [0, 2, 4].map((i) => parseInt(m[1].substr(i, 2), 16) / 255).map((v) => (v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4)));
+          light = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2] > 0.18;
+        }
+        infoHeader.classList.toggle("mcjs-header-light", light);
       }
 
       const infoGridContainer = document.getElementById("infoGridContainer");
@@ -11032,6 +11054,11 @@ function setDashboardYearText() {
       const evt = pendingEvt;
       if (!evt) return;
       const z = zipAtEvent(evt);
+      if (infoPanel && infoPanel.__anchored && pinnedZip) {
+        // pinned ZIP details stay put (so the X can be reached); hover only updates state
+        if (z !== hoverZip) { hoverZip = z; refreshAcs(); }
+        return;
+      }
       if (z !== hoverZip) {
         hoverZip = z;
         if (!z) {
@@ -11142,6 +11169,7 @@ function focusZipByIndex(idx) {
     interactiveZips.length;
   const z = interactiveZips[focusedZipIndex];
   hoverZip = z;
+  { const ip = document.getElementById("infoPanel"); if (ip) ip.__suppress = null; }
 
   const feat = featureByZip.get(z);
   if (feat) {
@@ -11272,15 +11300,33 @@ function showInfoTooltip(icon) {
       try { pendingEvt = null; } catch (e) {}
       rafQueued = false;
       hoverZip = null;
-      clearPanel();
+      if (!(infoPanel && infoPanel.__anchored && pinnedZip)) clearPanel();
       refreshAcs();
     });
 
     view.on("immediate-click", (evt) => {
       evt.stopPropagation();
       const z = zipAtEvent(evt);
+      if (infoPanel) infoPanel.__suppress = null;
+      if (z && infoPanel && infoPanel.classList.contains("display-none") && (z === pinnedZip || z === pinnedZipB)) {
+        // box was closed with X: a click/tap on the selected ZIP reopens it instead of unpinning
+        showPanel(featureByZip.get(z));
+        positionPanelAtCursor(evt.x, evt.y);
+        infoPanel.__anchored = true;
+        return;
+      }
       if (z) {
         togglePin(z);
+        if (infoPanel) infoPanel.__anchored = false;
+        const pz = pinnedZipB || pinnedZip;
+        if (pz && featureByZip.get(pz)) {
+          showPanel(featureByZip.get(pz));
+          positionPanelAtCursor(evt.x, evt.y);
+          if (infoPanel) infoPanel.__anchored = true;
+        } else if (featureByZip.get(z)) {
+          showPanel(featureByZip.get(z));
+          positionPanelAtCursor(evt.x, evt.y);
+        }
       } else if (!isCompareMode) {
         clearPinned();
       }
@@ -11522,6 +11568,88 @@ setTimeout(() => {
     infoCard.className = "info-tooltip-card shadow-1";
     document.body.appendChild(infoCard);
 
+    /* ---- Visible close (X) buttons for the ZIP details panel and the info pop-ups ---- */
+    const MCJS_X = '<svg aria-hidden="true" focusable="false" viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M3.5 3.5l9 9M12.5 3.5l-9 9"/></svg>';
+    function mcjsCloseBtn(label, onClose) {
+      const b = window.document.createElement("button");
+      b.type = "button"; b.className = "mcjs-close";
+      b.setAttribute("aria-label", label); b.setAttribute("title", label);
+      b.innerHTML = MCJS_X;
+      b.addEventListener("click", (e) => { e.preventDefault(); e.stopPropagation(); onClose(); });
+      return b;
+    }
+    // Leaving the whole map area (not just onto our own panel) re-arms a closed panel.
+    { const mw = document.querySelector(".map-wrap"); if (mw && infoPanel) mw.addEventListener("mouseleave", () => { infoPanel.__suppress = null; }); }
+    // Map ZIP details panel: X hides the box but keeps any pinned selection.
+    if (infoPanel) {
+      const hdr = infoPanel.querySelector(".info-header");
+      if (hdr && !hdr.querySelector(".mcjs-close")) {
+        hdr.appendChild(mcjsCloseBtn("Close ZIP details", () => {
+          infoPanel.__suppress = infoPanel.__zip || hoverZip || null;
+          infoPanel.__anchored = false;
+          infoPanel.classList.add("display-none");
+          // keyboard users: park focus on the map region (focusing a list item would reopen the box)
+          const mapEl = document.getElementById("map");
+          if (mapEl && mapEl.focus) { if (!mapEl.hasAttribute("tabindex")) mapEl.setAttribute("tabindex", "-1"); mapEl.focus({ preventScroll: true }); }
+        }));
+      }
+    }
+    // Info "i" pop-ups: add an X whenever the card is (re)filled.
+    function mcjsCloseTip() {
+      const icon = infoCard.__icon || null;
+      infoCard.__suppressIcon = icon;
+      infoCard.style.display = "none";
+      if (icon && icon.focus) icon.focus({ preventScroll: true });
+    }
+    new MutationObserver(() => {
+      if (!infoCard.querySelector(".mcjs-close")) infoCard.insertBefore(mcjsCloseBtn("Close information", mcjsCloseTip), infoCard.firstChild);
+    }).observe(infoCard, { childList: true });
+    // Capture phase runs before the tooltip handlers: remember the icon, and keep a closed
+    // pop-up from reopening until the pointer/focus leaves that icon.
+    const mcjsTipGate = (e) => {
+      const icon = e.target && e.target.closest ? e.target.closest(".info-icon") : null;
+      if (!icon) return;
+      if (infoCard.__suppressIcon === icon) { e.stopImmediatePropagation(); return; }
+      infoCard.__icon = icon;
+    };
+    window.document.addEventListener("mouseover", mcjsTipGate, true);
+    window.document.addEventListener("focusin", mcjsTipGate, true);
+    window.document.addEventListener("mouseout", (e) => {
+      const icon = e.target && e.target.closest ? e.target.closest(".info-icon") : null;
+      if (icon && infoCard.__suppressIcon === icon && !(e.relatedTarget && icon.contains(e.relatedTarget))) infoCard.__suppressIcon = null;
+    }, true);
+    window.document.addEventListener("focusout", (e) => {
+      const icon = e.target && e.target.closest ? e.target.closest(".info-icon") : null;
+      if (!icon) return;
+      if (infoCard.__suppressIcon === icon) { infoCard.__suppressIcon = null; e.stopImmediatePropagation(); return; }
+      // keyboard: let focus move from the icon into the pop-up's X without hiding it
+      if (e.relatedTarget && infoCard.contains(e.relatedTarget)) e.stopImmediatePropagation();
+    }, true);
+    infoCard.addEventListener("focusout", (e) => {
+      if (!(e.relatedTarget && (infoCard.contains(e.relatedTarget) || e.relatedTarget === infoCard.__icon))) infoCard.style.display = "none";
+    });
+    infoCard.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") { e.stopPropagation(); mcjsCloseTip(); return; }
+      if (e.key === "Tab" && infoCard.__icon) {
+        // the pop-up sits at the end of the DOM; keep keyboard order icon -> X -> next control
+        e.preventDefault();
+        const icon = infoCard.__icon;
+        if (e.shiftKey) { infoCard.__suppressIcon = null; icon.focus({ preventScroll: true }); return; }
+        const all = Array.from(root.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+          .filter((el) => !infoCard.contains(el) && el.offsetParent !== null && !el.disabled);
+        const i = all.indexOf(icon);
+        infoCard.style.display = "none";
+        const next = all[i + 1];
+        if (next) next.focus(); else icon.focus();
+      }
+    });
+    window.document.addEventListener("keydown", (e) => {
+      if (e.key !== "Tab" || e.shiftKey) return;
+      const icon = e.target && e.target.closest ? e.target.closest(".info-icon") : null;
+      const x = infoCard.querySelector(".mcjs-close");
+      if (icon && icon === infoCard.__icon && x && infoCard.style.display !== "none") { e.preventDefault(); x.focus({ preventScroll: true }); }
+    }, true);
+
     document.addEventListener("mouseover", (e) => {
       const icon = e.target.closest(".info-icon");
       if (icon) {
@@ -11621,7 +11749,12 @@ document.addEventListener("focusin", (e) => {
 });
 
 let __mcjsTipTimer = null;
-function __mcjsHideTipSoon() { clearTimeout(__mcjsTipTimer); __mcjsTipTimer = setTimeout(() => { infoCard.style.display = "none"; }, 300); }
+let __mcjsTouch = false;
+window.document.addEventListener("pointerdown", (e) => {
+  __mcjsTouch = e.pointerType === "touch" || e.pointerType === "pen";
+  if (__mcjsTouch && infoCard.style.display !== "none" && !infoCard.contains(e.target) && !(e.target.closest && e.target.closest(".info-icon"))) infoCard.style.display = "none";
+}, true);
+function __mcjsHideTipSoon() { if (__mcjsTouch) return; /* touch: no hover, close with X or Escape */ clearTimeout(__mcjsTipTimer); __mcjsTipTimer = setTimeout(() => { infoCard.style.display = "none"; }, 300); }
 infoCard.addEventListener("mouseenter", () => clearTimeout(__mcjsTipTimer));
 infoCard.addEventListener("mouseleave", __mcjsHideTipSoon);
 document.addEventListener("mouseover", (e) => { if (e.target.closest && e.target.closest(".info-icon")) clearTimeout(__mcjsTipTimer); });
@@ -11632,12 +11765,13 @@ document.addEventListener("mouseout", (e) => {
   }
 });
 // WCAG 1.4.13 / 2.1.2: Escape dismisses tooltip, hover panel and suggestions
-document.addEventListener("keydown", (e) => {
+window.document.addEventListener("keydown", (e) => {
   if (e.key !== "Escape") return;
+  if (!(root.contains(e.target) || e.target === window.document.body || e.target === window.document.documentElement)) return;
   clearTimeout(__mcjsTipTimer);
   infoCard.style.display = "none";
   const ip = document.getElementById("infoPanel");
-  if (ip) ip.classList.add("display-none");
+  if (ip) { if (!ip.classList.contains("display-none")) ip.__suppress = ip.__zip || null; ip.classList.add("display-none"); }
   try { hideSuggestions(); } catch (err) {}
 });
 
