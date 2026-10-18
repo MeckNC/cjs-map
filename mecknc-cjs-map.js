@@ -11886,3 +11886,51 @@ document.addEventListener("focusout", (e) => {
     NS.observer.observe(realDocument.documentElement, { childList: true, subtree: true });
   }
 })(window, document);
+
+/* ZIP list scroll affordance (wrapper fades + count line), injected so no Drupal markup change */
+(function () {
+  function setup() {
+    var list = document.getElementById("mcjs-zipList");
+    if (!list || !list.children.length) return false;
+    var wrap = list.parentElement;
+    if (!wrap.classList.contains("mcjs-zipwrap")) {
+      wrap = document.createElement("div");
+      wrap.className = "mcjs-zipwrap";
+      list.parentNode.insertBefore(wrap, list);
+      wrap.appendChild(list);
+    }
+    var count = document.getElementById("mcjs-zipCount");
+    if (!count) {
+      count = document.createElement("p");
+      count.id = "mcjs-zipCount";
+      count.className = "mcjs-zipcount";
+      wrap.parentNode.insertBefore(count, wrap);
+      var d = (list.getAttribute("aria-describedby") || "").split(" ").filter(Boolean);
+      if (d.indexOf("mcjs-zipCount") < 0) d.push("mcjs-zipCount");
+      list.setAttribute("aria-describedby", d.join(" "));
+    }
+    function update() {
+      var n = list.querySelectorAll(".zip-list-item").length;
+      var over = list.scrollHeight - list.clientHeight > 2;
+      var txt = n + " ZIP areas";
+      if (count.__t !== txt + over) {
+        count.__t = txt + over;
+        count.textContent = txt;
+        if (over) { var m = document.createElement("span"); m.className = "mcjs-zipmore"; m.textContent = " \u2014 scroll for more"; count.appendChild(m); }
+      }
+      wrap.classList.toggle("mcjs-more-above", over && list.scrollTop > 2);
+      wrap.classList.toggle("mcjs-more-below", over && list.scrollTop + list.clientHeight < list.scrollHeight - 2);
+    }
+    if (!list.__mcjsAff) {
+      list.__mcjsAff = true;
+      list.addEventListener("scroll", update, { passive: true });
+      window.addEventListener("resize", update);
+      if (window.ResizeObserver) new ResizeObserver(update).observe(list);
+      new MutationObserver(update).observe(list, { childList: true });
+    }
+    update();
+    return true;
+  }
+  var tries = 0;
+  (function poll() { if (!setup() && tries++ < 120) setTimeout(poll, 250); })();
+})();
