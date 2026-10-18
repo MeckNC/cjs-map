@@ -11909,17 +11909,54 @@ document.addEventListener("focusout", (e) => {
       if (d.indexOf("mcjs-zipCount") < 0) d.push("mcjs-zipCount");
       list.setAttribute("aria-describedby", d.join(" "));
     }
+    var btn = document.getElementById("mcjs-zipMore");
+    if (!btn) {
+      btn = document.createElement("button");
+      btn.type = "button"; btn.id = "mcjs-zipMore";
+      btn.className = "usa-button usa-button--outline mcjs-zipmore-btn";
+      btn.setAttribute("aria-controls", "mcjs-zipList");
+      wrap.parentNode.insertBefore(btn, wrap.nextSibling);
+      var live = document.createElement("div");
+      live.id = "mcjs-zipLive"; live.className = "usa-sr-only";
+      live.setAttribute("aria-live", "polite"); live.setAttribute("aria-atomic", "true");
+      wrap.parentNode.insertBefore(live, btn.nextSibling);
+    }
+    var live = document.getElementById("mcjs-zipLive");
+    function items() { return Array.prototype.slice.call(list.querySelectorAll(".zip-list-item")); }
+    function range() {
+      var all = items(), top = list.scrollTop, bot = top + list.clientHeight, f = -1, l = -1;
+      all.forEach(function (el, i) {
+        var a = el.offsetTop - list.offsetTop, b = a + el.offsetHeight;
+        if (a >= top - 2 && b <= bot + 2) { if (f < 0) f = i; l = i; }
+      });
+      if (f < 0) { f = 0; l = 0; }
+      return { f: f, l: l, n: all.length };
+    }
+    function atEnd() { return list.scrollTop + list.clientHeight >= list.scrollHeight - 2; }
     function update() {
-      var n = list.querySelectorAll(".zip-list-item").length;
+      var r = range();
       var over = list.scrollHeight - list.clientHeight > 2;
-      var txt = n + " ZIP areas";
-      if (count.__t !== txt + over) {
-        count.__t = txt + over;
-        count.textContent = txt;
-        if (over) { var m = document.createElement("span"); m.className = "mcjs-zipmore"; m.textContent = " \u2014 scroll for more"; count.appendChild(m); }
-      }
+      var txt = r.n + " ZIP areas" + (over ? " \u2014 showing " + (r.f + 1) + "\u2013" + (r.l + 1) : "");
+      if (count.textContent !== txt) count.textContent = txt;
+      btn.hidden = !over;
+      var lbl = atEnd() ? "Back to top" : "Show more";
+      if (btn.textContent !== lbl) btn.textContent = lbl;
       wrap.classList.toggle("mcjs-more-above", over && list.scrollTop > 2);
-      wrap.classList.toggle("mcjs-more-below", over && list.scrollTop + list.clientHeight < list.scrollHeight - 2);
+      wrap.classList.toggle("mcjs-more-below", over && !atEnd());
+    }
+    if (!btn.__mcjs) {
+      btn.__mcjs = true;
+      btn.addEventListener("click", function () {
+        var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
+        var all = items(), r = range(), target;
+        if (atEnd()) target = 0;
+        else { var i = Math.min(all.length - 1, r.l + 1); target = all[i].offsetTop - list.offsetTop; }
+        target = Math.min(target, list.scrollHeight - list.clientHeight);
+        list.scrollTo({ top: target, behavior: reduce ? "auto" : "smooth" });
+        var done = false;
+        function say() { if (done) return; done = true; update(); var q = range(); live.textContent = ""; setTimeout(function () { live.textContent = "Showing " + (q.f + 1) + " to " + (q.l + 1) + " of " + q.n; }, 50); }
+        if (reduce) say(); else { list.addEventListener("scrollend", say, { once: true }); setTimeout(say, 700); }
+      });
     }
     if (!list.__mcjsAff) {
       list.__mcjsAff = true;
