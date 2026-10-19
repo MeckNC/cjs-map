@@ -287,7 +287,7 @@ have completed at least high school.`,
 var CUSTOM_MAP_STYLE = 
 {
   "version": 8,
-  "sprite": "https://www.arcgis.com/sharing/rest/content/items/3bab6a6c630045cc8a7bc5f4d8ff3bc0/resources/sprites/sprite-1786986968956",
+  "sprite": "https://cdn.arcgis.com/sharing/rest/content/items/ba52238d338745b1a355407ec9df6768/resources/sprites/sprite",
   "glyphs": "https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer/resources/fonts/{fontstack}/{range}.pbf",
   "sources": {
     "esri": {
