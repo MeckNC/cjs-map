@@ -1980,3 +1980,20 @@
 #mecknc-cjs-map #mcjs-zipMore:focus-visible{outline:3px solid #005fcc !important;outline-offset:2px;}
 #mecknc-cjs-map #mcjs-zipMore[hidden]{display:none !important;}
 #mecknc-cjs-map .mcjs-zipwrap{margin-bottom:8px;}
+
+/* ---- No internal scrolling (except the ZIP list): widget grows to natural height ---- */
+#mecknc-cjs-map{height:auto !important;min-height:0;overflow-x:clip;overflow-y:visible;contain:none;}
+#mecknc-cjs-map .mcjs-cq,#mecknc-cjs-map .app{height:auto;max-height:none;overflow:visible;}
+#mecknc-cjs-map .app{grid-template-rows:auto auto;}
+#mecknc-cjs-map .main{height:auto;overflow:visible;align-items:start;}
+#mecknc-cjs-map .map-wrap{height:var(--mcjs-map-h,600px);position:sticky;top:0;align-self:start;}
+#mecknc-cjs-map .sidebar{height:auto;overflow:visible;}
+#mecknc-cjs-map .rank-list{max-height:none;overflow:visible;padding-right:0;}
+#mecknc-cjs-map .info-panel{max-height:none;overflow:visible;}
+#mecknc-cjs-map .info-tooltip-card{overflow:visible;}
+#mecknc-cjs-map .search-suggestions{max-height:none;overflow:visible;}
+@container mcjs (max-width: 768px){
+  #mecknc-cjs-map .app{overflow:visible;}
+  #mecknc-cjs-map .main{align-items:stretch;}
+  #mecknc-cjs-map .map-wrap{position:relative;align-self:stretch;height:min(420px,70svh);min-height:300px;}
+}
