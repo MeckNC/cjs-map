@@ -6181,7 +6181,7 @@ var CUSTOM_MAP_STYLE =
           3
         ]
       ],
-      "minzoom": 14,
+      "minzoom": 9,
       "layout": {
         "symbol-placement": "line",
         "symbol-spacing": 800,
@@ -6260,7 +6260,7 @@ var CUSTOM_MAP_STYLE =
           3
         ]
       ],
-      "minzoom": 14,
+      "minzoom": 9,
       "layout": {
         "symbol-placement": "line",
         "symbol-spacing": 800,
