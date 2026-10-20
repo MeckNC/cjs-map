@@ -10851,6 +10851,7 @@ function setDashboardYearText() {
         pinHandleB = null;
       }
       highlightPins();
+      try { setHoverPreview(null); } catch (e) {}
       clearPanel();
       refreshAcs();
     }
@@ -11054,9 +11055,9 @@ function setDashboardYearText() {
       const evt = pendingEvt;
       if (!evt) return;
       const z = zipAtEvent(evt);
-      if (infoPanel && infoPanel.__anchored && pinnedZip) {
-        // pinned ZIP details stay put (so the X can be reached); hover only updates state
-        if (z !== hoverZip) { hoverZip = z; refreshAcs(); }
+      if (pinnedZip || pinnedZipB) {
+        // a ZIP is pinned: its details box and cards stay put; hover only draws a light outline preview
+        if (z !== hoverZip) { hoverZip = z; try { setHoverPreview(z && z !== pinnedZip && z !== pinnedZipB ? z : null); } catch (e) {} }
         return;
       }
       if (z !== hoverZip) {
@@ -11102,6 +11103,11 @@ function buildZipList() {
     btn.addEventListener("click", () => {
       focusZipByIndex(idx);
       togglePin(zip);
+      try {
+        const ip0 = document.getElementById("infoPanel");
+        if (ip0 && (zip === pinnedZip || zip === pinnedZipB) && featureByZip.get(zip)) { showPanel(featureByZip.get(zip)); ip0.__anchored = true; }
+        setHoverPreview(null);
+      } catch (e) {}
       // same rule as map clicks: if this ZIP was unpinned, close its details box
       try {
         const ip = document.getElementById("infoPanel");
@@ -11134,6 +11140,7 @@ function buildZipList() {
       if (e.relatedTarget && container.contains(e.relatedTarget)) return;
       hoverZip = null;
       try { highlightFocusedZip(null); } catch (err) {}
+      if (pinnedZip || pinnedZipB) return; // keep the pinned ZIP's details and cards
       clearPanel();
       currentAcsKey = "";
       refreshAcs();
@@ -11178,13 +11185,26 @@ function focusZipByIndex(idx) {
   { const ip = document.getElementById("infoPanel"); if (ip) ip.__suppress = null; }
 
   const feat = featureByZip.get(z);
+  highlightFocusedZip(z);
+  if ((pinnedZip || pinnedZipB) && z !== pinnedZip && z !== pinnedZipB) return; // pinned: preview outline only
   if (feat) {
     showPanel(feat);
   } else {
     clearPanel();
   }
-  highlightFocusedZip(z);
   refreshAcs();
+}
+
+function setHoverPreview(zip) {
+  const old = [];
+  selectionGL.graphics.forEach((g) => { if (g.attributes && g.attributes.hoverPreview) old.push(g); });
+  old.forEach((g) => selectionGL.remove(g));
+  if (!zip) return;
+  const geom = geomByZip.get(zip);
+  if (!geom) return;
+  [[[255, 255, 255, 0.9], 3], [[33, 23, 70, 0.6], 1.5]].forEach(([c, w]) => {
+    selectionGL.add(new Graphic({ geometry: geom, attributes: { hoverPreview: true }, symbol: new SimpleFillSymbol({ color: [0, 0, 0, 0], outline: { color: c, width: w } }) }));
+  });
 }
 
 
@@ -11307,13 +11327,14 @@ function showInfoTooltip(icon) {
       try { pendingEvt = null; } catch (e) {}
       rafQueued = false;
       hoverZip = null;
-      if (!(infoPanel && infoPanel.__anchored && pinnedZip)) clearPanel();
-      refreshAcs();
+      try { setHoverPreview(null); } catch (e) {}
+      if (!(pinnedZip || pinnedZipB)) { clearPanel(); refreshAcs(); }
     });
 
     view.on("immediate-click", (evt) => {
       evt.stopPropagation();
       const z = zipAtEvent(evt);
+      try { setHoverPreview(null); } catch (e) {}
       if (infoPanel) infoPanel.__suppress = null;
       if (z && infoPanel && infoPanel.__closedByUser && (z === pinnedZip || z === pinnedZipB)) {
         infoPanel.__closedByUser = false;
@@ -11336,9 +11357,8 @@ function showInfoTooltip(icon) {
           // clicked ZIP was unpinned: close its details box
           infoPanel.classList.add("display-none");
         }
-      } else if (!isCompareMode) {
-        clearPinned();
       }
+      // clicking empty map area keeps the current selection (use Reset or the details X to clear)
     });
 
     async function loadDataset() {
