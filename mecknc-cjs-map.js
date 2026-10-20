@@ -10805,6 +10805,7 @@ function setDashboardYearText() {
       setPins(pinnedZip || null, null);
       try { mcjsAnnounce(isCompareMode ? (pinnedZip ? `Compare mode on. ZIP ${pinnedZip} is ZIP 1; pick a second ZIP.` : "Compare mode on. Pick two ZIP areas.") : "Compare mode off."); } catch (e) {}
       try { const ip = document.getElementById("infoPanel"); if (ip) { ip.classList.add("display-none"); ip.__anchored = false; } } catch (e) {}
+      try { if (!mapPointerInside) queueMapHeight(true); } catch (e) {}
     }
 
     function togglePin(z) {
@@ -11047,6 +11048,75 @@ function setDashboardYearText() {
       return null;
     }
 
+
+    // Desktop map height lock. The map column used to stretch to the sidebar's live height, so a hover
+    // that re-rendered the sidebar cards (e.g. the demographics card: 95px empty vs 187px for a ZIP)
+    // resized the MapView under the cursor, shifting the map, changing the ZIP under the pointer and
+    // repeating (jerky popup + shaking map). Now the map height = max(600px, sidebar natural height), grows
+    // only while the pointer is off the map, never shrinks on hover; Reset/Compare/width changes re-measure.
+    let mapPointerInside = false;
+    const mapLock = { h: 0, w: 0, raf: 0 };
+    function sidebarNaturalHeight(sb) {
+      const top = sb.getBoundingClientRect().top;
+      let bottom = top;
+      for (const c of sb.children) {
+        if (c.offsetParent === null && getComputedStyle(c).position !== "fixed") continue;
+        const r = c.getBoundingClientRect();
+        if (r.height) bottom = Math.max(bottom, r.bottom + (parseFloat(getComputedStyle(c).marginBottom) || 0));
+      }
+      return Math.ceil(bottom - top + (parseFloat(getComputedStyle(sb).paddingBottom) || 0));
+    }
+    // Reserve the demographics body at a ZIP's height so the empty-state hint (shorter) doesn't make the
+    // sidebar jump every time the pointer crosses between ZIPs and gaps. Measured synchronously (never painted).
+    function reserveDemoHeight() {
+      const body = document.getElementById("demographicsBody"), title = document.getElementById("demographicsTitle");
+      const sample = (interactiveZips && interactiveZips[0]) || null;
+      if (!body || !sample || body.offsetParent === null) return;
+      const html = body.innerHTML, t = title ? title.textContent : null;
+      body.style.minHeight = "";
+      renderDemographics(sample);
+      const h = body.offsetHeight;
+      body.innerHTML = html;
+      if (title) title.textContent = t;
+      if (h) body.style.minHeight = h + "px";
+    }
+    function syncMapHeight(force) {
+      const wrap = document.querySelector(".map-wrap"), sb = document.querySelector(".sidebar"), mapEl = document.getElementById("map");
+      if (!wrap || !sb || !mapEl) return;
+      const desktop = getComputedStyle(mapEl).position === "absolute";
+      if (!desktop) { const w0 = Math.round(__root.getBoundingClientRect().width); if (w0 !== mapLock.w) { mapLock.w = w0; try { reserveDemoHeight(); } catch (e) {} } wrap.classList.remove("mcjs-hlock"); wrap.style.removeProperty("--mcjs-lock-h"); mapLock.h = 0; return; }
+      const w = Math.round(__root.getBoundingClientRect().width);
+      if (w !== mapLock.w) { mapLock.w = w; force = true; try { reserveDemoHeight(); } catch (e) {} }
+      if (mapPointerInside && !force && mapLock.h) return; // never resize the map under the cursor
+      const base = parseFloat(getComputedStyle(wrap).minHeight) || 600;
+      const want = Math.max(base, sidebarNaturalHeight(sb));
+      const h = force || !mapLock.h ? want : Math.max(mapLock.h, want);
+      if (h !== mapLock.h || !wrap.classList.contains("mcjs-hlock")) {
+        mapLock.h = h;
+        wrap.style.setProperty("--mcjs-lock-h", h + "px");
+        wrap.classList.add("mcjs-hlock");
+      }
+    }
+    function queueMapHeight(force) {
+      if (force) mapLock.force = true;
+      if (mapLock.raf) return;
+      mapLock.raf = requestAnimationFrame(() => { mapLock.raf = 0; const f = mapLock.force; mapLock.force = false; try { syncMapHeight(f); } catch (e) {} });
+    }
+    function setupMapHeightLock() {
+      const sb = document.querySelector(".sidebar"), mapEl = document.getElementById("map");
+      if (!sb || !mapEl || __root.__mcjsHLock) return;
+      __root.__mcjsHLock = true;
+      mapEl.addEventListener("pointerenter", () => { mapPointerInside = true; });
+      mapEl.addEventListener("pointerleave", () => { mapPointerInside = false; queueMapHeight(false); });
+      if (window.ResizeObserver) {
+        const ro = new ResizeObserver(() => queueMapHeight(false));
+        ro.observe(__root);
+        Array.prototype.forEach.call(sb.children, (c) => ro.observe(c));
+      }
+      window.addEventListener("resize", () => queueMapHeight(true));
+      queueMapHeight(true);
+    }
+
     let pendingEvt = null,
       rafQueued = false;
 
@@ -11070,6 +11140,8 @@ function setDashboardYearText() {
         refreshAcs();
       }
       if (z) {
+        // hover preview: the box follows the cursor but can't take the pointer (its X is click-through until pinned)
+        if (infoPanel) infoPanel.classList.add("mcjs-hovering");
         positionPanelAtCursor(evt.x, evt.y);
       }
     }
@@ -11101,6 +11173,7 @@ function buildZipList() {
     btn.textContent = `ZIP ${zip}`;
 
     btn.addEventListener("click", () => {
+      try { const ipH = document.getElementById("infoPanel"); if (ipH) ipH.classList.remove("mcjs-hovering"); } catch (e) {}
       focusZipByIndex(idx);
       togglePin(zip);
       try {
@@ -11185,6 +11258,7 @@ function focusZipByIndex(idx) {
   { const ip = document.getElementById("infoPanel"); if (ip) ip.__suppress = null; }
 
   const feat = featureByZip.get(z);
+  { const ipH = document.getElementById("infoPanel"); if (ipH) ipH.classList.remove("mcjs-hovering"); }
   highlightFocusedZip(z);
   if ((pinnedZip || pinnedZipB) && z !== pinnedZip && z !== pinnedZipB) return; // pinned: preview outline only
   if (feat) {
@@ -11333,6 +11407,7 @@ function showInfoTooltip(icon) {
 
     view.on("immediate-click", (evt) => {
       evt.stopPropagation();
+      if (infoPanel) infoPanel.classList.remove("mcjs-hovering");
       const z = zipAtEvent(evt);
       try { setHoverPreview(null); } catch (e) {}
       if (infoPanel) infoPanel.__suppress = null;
@@ -11479,6 +11554,7 @@ function showInfoTooltip(icon) {
         clearPanel();
         refreshAcs();
         addFooter();
+        setupMapHeightLock();
 		  
 		  
 // Force map and all its internal elements out of the tab order
@@ -11591,6 +11667,7 @@ setTimeout(() => {
         }
       }
       clearPinned();
+      try { queueMapHeight(true); } catch (e) {}
       if (searchInput) searchInput.value = "";
       hideSuggestions();
       clearSearchMarker();

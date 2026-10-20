@@ -1999,3 +1999,10 @@
   #mecknc-cjs-map .map-wrap{position:relative;align-self:stretch;height:min(420px,70svh);min-height:300px;}
   #mecknc-cjs-map .map-wrap > #mcjs-map{position:relative;inset:auto;height:100%;}
 }
+
+/* ---- Hover stability: map height is locked by JS (no MapView resize while hovering); hover box can't take the pointer ---- */
+#mecknc-cjs-map .map-wrap.mcjs-hlock{align-self:start;height:var(--mcjs-lock-h,600px);}
+@container mcjs (max-width: 768px){
+  #mecknc-cjs-map .map-wrap.mcjs-hlock{align-self:stretch;height:min(420px,70svh);}
+}
+#mecknc-cjs-map .info-panel.mcjs-hovering, #mecknc-cjs-map .info-panel.mcjs-hovering .mcjs-close{pointer-events:none;}
